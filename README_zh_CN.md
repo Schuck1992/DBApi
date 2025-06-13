@@ -25,16 +25,21 @@
 
 ## 特点
 - 开箱即用，不需要编程，单机模式不需要依赖其他软件（只需要java运行环境）
-- 支持单机模式、集群模式，支持`windows` `Linux` `Mac`
+- 资源占用极低，2核4G服务器即可运行
+- 支持单机模式、集群模式，支持`windows` `Linux` `mac`
 - 支持动态创建、修改API；动态创建、修改数据源。热部署全程无感。
 - 支持API级别的访问权限控制，支持IP白名单、黑名单控制
-- 支持所有类型数据库（JDBC协议），包括mysql/sqlserver/postgreSql/hive/oracle等等
+- 支持所有关系型数据库（JDBC协议），包括mysql、sqlserver、postgreSql、oracle、hive、达梦、人大金仓、doris、Oceanbase、GaussDB等等
 - 支持动态sql，类似mybatis的动态sql，支持sql编辑、运行、调试
+- 支持Select/Insert/Update/Delete语句，支持存储过程调用
+- 支持一个接口内多条SQL执行（例如分页功能），支持事务开启关闭
 - 丰富的插件扩展，支持缓存、数据转换、失败告警
 - 支持API配置导入导出，方便测试环境到生产环境的API迁移
-- 支持一个接口内多条SQL执行（例如分页功能），支持事务开启关闭
-- 支持复杂嵌套json传参
+- 支持接口传参，也支持复杂嵌套JSON传参，支持参数校验
 - 支持接口调用记录查询，接口访问信息统计
+- 支持API限流
+- 支持编排API
+- 支持OpenAPI，方便集成到其他软件系统
 
 ## 安装包下载
 [安装包下载](https://www.51dbapi.com/v4.0.0/download/)
