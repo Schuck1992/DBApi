@@ -16,7 +16,7 @@ jobs:
 
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -25,7 +25,6 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: '11'
-        vue-version: '2.6.12'
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
