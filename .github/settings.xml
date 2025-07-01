@@ -1,7 +1,39 @@
-<mirrors>
-  <mirror>
-    <id>aliyun</id>
-    <mirrorOf>*</mirrorOf>
-    <url>https://maven.aliyun.com/repository/public</url>
-  </mirror>
-</mirrors>
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.2.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
+
+  <!-- 全局配置 -->
+  <mirrors>
+    <!-- 使用阿里云的 HTTPS 镜像加速 Maven 下载 -->
+    <mirror>
+      <id>aliyun</id>
+      <mirrorOf>*</mirrorOf>
+      <url>https://maven.aliyun.com/repository/public</url>
+    </mirror>
+  </mirrors>
+
+  <!-- 配置 JDK 工具链 -->
+  <profiles>
+    <profile>
+      <id>default-jdk</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <properties>
+        <!-- 设置默认编码和JDK版本 -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <java.version>11</java.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+      </properties>
+    </profile>
+  </profiles>
+
+  <!-- 激活的 profile -->
+  <activeProfiles>
+    <activeProfile>default-jdk</activeProfile>
+  </activeProfiles>
+
+</settings>
