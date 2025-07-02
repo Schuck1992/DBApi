@@ -23,12 +23,7 @@
     </properties>
 
     <dependencies>
-
-        <dependency>
-            <groupId>com.gitee.freakchicken.dbapi</groupId>
-            <artifactId>dbapi-service</artifactId>
-        </dependency>
-
+             
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
