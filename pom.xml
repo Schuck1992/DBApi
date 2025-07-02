@@ -29,10 +29,10 @@
             <id>release</id>
             <modules>
                 <module>dbapi-ui</module>
-                <module>dbapi-tool</module>
+                <!--<module>dbapi-tool</module>-->
                 <module>dbapi-common</module>
                 <module>dbapi-plugin</module>
-                <module>dbapi-service</module>
+                <!--<module>dbapi-service</module>-->
                 <module>dbapi-controller</module>
                 <module>dbapi-standalone</module>
                 <module>dbapi-cluster-apiServer</module>
