@@ -42,6 +42,12 @@
 ## 官方文档
 [官方文档](https://www.51dbapi.com)
 
+## 使用教程
+  
+   	docker build -t test_dbapi:4.0.0 .
+   	docker run -d -p 8520:8520 --name test_dbapi test_dbapi:4.0.0 standalone
+    
+
 
 ## 软件截图
 ![](https://freakchicken.gitee.io/images/dbApi/20230523/create_ds_page.png)
