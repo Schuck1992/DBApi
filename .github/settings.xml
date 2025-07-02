@@ -3,15 +3,45 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.2.0 https://maven.apache.org/xsd/settings-1.2.0.xsd">
 
-  <!-- 全局配置 -->
-  <mirrors>
-    <!-- 使用阿里云的 HTTPS 镜像加速 Maven 下载 -->
-    <mirror>
-      <id>aliyun</id>
-      <mirrorOf>*</mirrorOf>
-      <url>https://maven.aliyun.com/repository/public</url>
-    </mirror>
-  </mirrors>
+  <!-- 定义多个仓库 -->
+  <profiles>
+    <profile>
+      <id>default-repos</id>
+      <repositories>
+        <!-- Maven Central 官方仓库 -->
+        <repository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+
+        <!-- 阿里云公共仓库 -->
+        <repository>
+          <id>aliyun</id>
+          <url>https://maven.aliyun.com/repository/public</url>
+          <releases><enabled>true</enabled></releases>
+          <snapshots><enabled>false</enabled></snapshots>
+        </repository>
+      </repositories>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>central</id>
+          <url>https://repo.maven.apache.org/maven2</url>
+        </pluginRepository>
+        <pluginRepository>
+          <id>aliyun</id>
+          <url>https://maven.aliyun.com/repository/public</url>
+        </pluginRepository>
+      </pluginRepositories>
+    </profile>
+  </profiles>
+
+  <!-- 激活默认仓库配置 -->
+  <activeProfiles>
+    <activeProfile>default-repos</activeProfile>
+  </activeProfiles>
 
   <!-- 配置 JDK 工具链 -->
   <profiles>
