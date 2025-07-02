@@ -34,6 +34,9 @@ jobs:
       - name: Build with Maven
         run: mvn -s .github/settings.xml clean package
 
+      - name: List files in dist/
+        run: ls -la dist/
+
       - name: Determine next version
         id: version
         run: |
@@ -61,15 +64,12 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: List files in target/
-        run: ls -la target/
-
       - name: Upload JAR to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: target/dbapi-${{ steps.version.outputs.NEXT_VERSION }}.jar
-          asset_name: dbapi-${{ steps.version.outputs.NEXT_VERSION }}.jar
-          asset_content_type: application/java-archive
+          asset_path: dist/dbapi-${{ steps.version.outputs.NEXT_VERSION }}.tar.gz
+          asset_name: dbapi-${{ steps.version.outputs.NEXT_VERSION }}.tar.gz
+          asset_content_type: application/gzip
