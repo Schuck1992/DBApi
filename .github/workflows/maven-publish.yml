@@ -6,8 +6,8 @@ name: Maven Package
 on:
   release:
     types: [created]
-  push:
-    branches: [ dev ] # 当代码推送到 dev 分支时触发
+#  push:
+#    branches: [ dev ] # 当代码推送到 dev 分支时触发
   pull_request:
     branches: [ dev ] # 当有 Pull Request 合并到 dev 分支时触发
 
@@ -39,3 +39,14 @@ jobs:
 
     - name: Build with Maven
       run: mvn -s .github/settings.xml clean package
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        token: ${{ secrets.DBAPI_SECRET }}
+        body_path: ./CHANGELOG.md
+        file: |
+          ./build/**
+          ./CHANGELOG.md
+
+    
