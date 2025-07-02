@@ -1,52 +1,79 @@
-# This workflow will build a package using Maven and then publish it to GitHub packages when a release is created
-# For more information see: https://github.com/actions/setup-java/blob/main/docs/advanced-usage.md#apache-maven-with-a-settings-path
-
-name: Maven Package
+name: Build & Auto Release
 
 on:
-  release:
-    types: [created]
   push:
-    branches: [ dev ] # 当代码推送到 dev 分支时触发
-  pull_request:
-    branches: [ dev ] # 当有 Pull Request 合并到 dev 分支时触发
+    branches:
+      - dev # 当推送到 main 分支时触发
 
 jobs:
-  build:
-
+  build-and-release:
     runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
+      id-token: write
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up JDK 11
-      uses: actions/setup-java@v4
-      with:
-        java-version: '11'
-        distribution: 'temurin'
-        server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
-        settings-path: ${{ github.workspace }} # location for the settings.xml file
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Cache local Maven repository
-      uses: actions/cache@v4
-      with:
-        path: ~/.m2/repository
-        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-        restore-keys: |
-          ${{ runner.os }}-maven-
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
 
-    - name: Build with Maven
-      run: mvn -s .github/settings.xml clean package
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        token: ${{ secrets.DBAPI_SECRET }}
-        body_path: ./CHANGELOG.md
-        file: |
-          ./build/**
-          ./CHANGELOG.md
+      - name: Build with Maven
+        run: mvn clean package
 
-    
+      - name: Determine next version
+        id: version
+        run: |
+          CURRENT_VERSION=$(git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.0')
+          MAJOR=$(echo $CURRENT_VERSION | cut -d'.' -f1 | tr -cd '[:digit:]')
+          MINOR=$(echo $CURRENT_VERSION | cut -d'.' -f2 | tr -cd '[:digit:]')
+          PATCH=$(echo $CURRENT_VERSION | cut -d'.' -f3 | tr -cd '[:digit:]')
+
+          if [ "$PATCH" = "" ]; then PATCH=0; fi
+
+          NEW_PATCH=$((PATCH + 1))
+          NEXT_VERSION="v$MAJOR.$MINOR.$NEW_PATCH"
+          echo "::set-output name=NEXT_VERSION::$NEXT_VERSION"
+
+      - name: Create and push Git tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git tag "${{ steps.version.outputs.NEXT_VERSION }}"
+          git push origin "${{ steps.version.outputs.NEXT_VERSION }}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        with:
+          tag_name: ${{ steps.version.outputs.NEXT_VERSION }}
+          release_name: Release ${{ steps.version.outputs.NEXT_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload JAR to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target/dbapi-${{ steps.version.outputs.NEXT_VERSION }}.jar
+          asset_name: dbapi-${{ steps.version.outputs.NEXT_VERSION }}.jar
+          asset_content_type: application/java-archive
