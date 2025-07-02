@@ -43,27 +43,13 @@
     <activeProfile>default-repos</activeProfile>
   </activeProfiles>
 
-  <!-- 配置 JDK 工具链 -->
-  <profiles>
-    <profile>
-      <id>default-jdk</id>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-      <properties>
-        <!-- 设置默认编码和JDK版本 -->
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
-        <java.version>11</java.version>
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
-      </properties>
-    </profile>
-  </profiles>
-
-  <!-- 激活的 profile -->
-  <activeProfiles>
-    <activeProfile>default-jdk</activeProfile>
-  </activeProfiles>
+  <!-- 其他构建配置 -->
+  <properties>
+    <java.version>11</java.version>
+    <maven.compiler.source>11</maven.compiler.source>
+    <maven.compiler.target>11</maven.compiler.target>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+  </properties>
 
 </settings>
