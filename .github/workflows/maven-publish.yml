@@ -1,0 +1,74 @@
+name: Build & Auto Release
+
+on:
+  push:
+    branches:
+      - master # 当推送到 main 分支时触发
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Cache local Maven repository
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - name: Build with Maven
+        run: mvn -s .github/settings.xml clean package
+
+      - name: List files in dist/
+        run: ls -la dist/
+
+      - name: Determine next version
+        id: version
+        run: |
+          NEXT_VERSION="$(date +%Y%m%d)-${GITHUB_SHA:0:7}"
+          echo "::set-output name=NEXT_VERSION::$NEXT_VERSION"
+
+      - name: Create and push Git tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        run: |
+          git config --local user.name "GitHub Actions"
+          git config --local user.email "actions@github.com"
+          git tag "${{ steps.version.outputs.NEXT_VERSION }}"
+          git push origin "${{ steps.version.outputs.NEXT_VERSION }}"
+
+      - name: Create GitHub Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        with:
+          tag_name: ${{ steps.version.outputs.NEXT_VERSION }}
+          release_name: Release ${{ steps.version.outputs.NEXT_VERSION }}
+          draft: false
+          prerelease: false
+
+      - name: Upload JAR to Release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/dbapi-4.0.10-bin.tar.gz
+          asset_name: dbapi-4.0.10-bin.tar.gz
+          asset_content_type: application/gzip
