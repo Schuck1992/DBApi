@@ -10,31 +10,11 @@ import java.util.stream.Collectors;
 @Slf4j
 public class PluginManager {
 
-    private static Map<String, BasePlugin> cachePluginMap = new ConcurrentHashMap<>();
-    private static Map<String, BasePlugin> transformPluginMap = new ConcurrentHashMap<>();
-    private static Map<String, BasePlugin> globalTransformPluginMap = new ConcurrentHashMap<>();
-    private static Map<String, BasePlugin> alarmPluginMap = new ConcurrentHashMap<>();
-    private static Map<String, BasePlugin> parameterValidatorMap = new ConcurrentHashMap<>();
-
-    private static List<JSONObject> allCachePlugins = new ArrayList<>();
-    private static List<JSONObject> allTransformPlugins = new ArrayList<>();
-    private static List<JSONObject> allGlobalTransformPlugins = new ArrayList<>();
-    private static List<JSONObject> allAlarmPlugins = new ArrayList<>();
-    private static List<JSONObject> allParameterValidators = new ArrayList<>();
+    private static Map<String, CachePlugin> cachePlugins = new ConcurrentHashMap<>();
+    private static Map<String, TransformPlugin> transformPlugins = new ConcurrentHashMap<>();
+    private static Map<String, AlarmPlugin> alarmPlugins = new ConcurrentHashMap<>();
 
     public static void loadPlugins() {
-
-        cachePluginMap.clear();
-        transformPluginMap.clear();
-        globalTransformPluginMap.clear();
-        alarmPluginMap.clear();
-        parameterValidatorMap.clear();
-
-        allCachePlugins.clear();
-        allTransformPlugins.clear();
-        allGlobalTransformPlugins.clear();
-        allAlarmPlugins.clear();
-        allParameterValidators.clear();
 
         ServiceLoader<CachePlugin> serviceLoader = ServiceLoader.load(CachePlugin.class);
         Iterator<CachePlugin> CachePlugins = serviceLoader.iterator();
@@ -42,9 +22,8 @@ public class PluginManager {
             CachePlugin plugin = CachePlugins.next();
             plugin.init();
             log.info("{} registered", plugin.getClass().getName());
-            cachePluginMap.put(plugin.getClass().getName(), plugin);
+            cachePlugins.put(plugin.getClass().getName(), plugin);
         }
-        allCachePlugins = getAllList(cachePluginMap);
         log.info("scan cache plugin finish");
 
         ServiceLoader<TransformPlugin> serviceLoader2 = ServiceLoader.load(TransformPlugin.class);
@@ -53,9 +32,8 @@ public class PluginManager {
             TransformPlugin plugin = TransformPlugins.next();
             plugin.init();
             log.info("{} registered", plugin.getClass().getName());
-            transformPluginMap.put(plugin.getClass().getName(), plugin);
+            transformPlugins.put(plugin.getClass().getName(), plugin);
         }
-        allTransformPlugins = getAllList(transformPluginMap);
         log.info("scan transform plugin finish");
 
         ServiceLoader<AlarmPlugin> serviceLoader3 = ServiceLoader.load(AlarmPlugin.class);
@@ -64,71 +42,34 @@ public class PluginManager {
             AlarmPlugin plugin = AlarmPlugins.next();
             plugin.init();
             log.info("{} registered", plugin.getClass().getName());
-            alarmPluginMap.put(plugin.getClass().getName(), plugin);
+            alarmPlugins.put(plugin.getClass().getName(), plugin);
         }
-        allAlarmPlugins = getAllList(alarmPluginMap);
         log.info("scan alarm plugin finish");
-
-        ServiceLoader<GlobalTransformPlugin> serviceLoader4 = ServiceLoader.load(GlobalTransformPlugin.class);
-        Iterator<GlobalTransformPlugin> GlobalTransformPlugins = serviceLoader4.iterator();
-        while (GlobalTransformPlugins.hasNext()) {
-            GlobalTransformPlugin plugin = GlobalTransformPlugins.next();
-            plugin.init();
-            log.info("{} registered", plugin.getClass().getName());
-            globalTransformPluginMap.put(plugin.getClass().getName(), plugin);
-        }
-        allGlobalTransformPlugins = getAllList(globalTransformPluginMap);
-        log.info("scan global transform plugin finish");
-
-        ServiceLoader<ParameterValidator> serviceLoader5 = ServiceLoader.load(ParameterValidator.class);
-        Iterator<ParameterValidator> ParameterValidators = serviceLoader5.iterator();
-        while (ParameterValidators.hasNext()) {
-            ParameterValidator plugin = ParameterValidators.next();
-            plugin.init();
-            log.info("{} registered", plugin.getClass().getName());
-            parameterValidatorMap.put(plugin.getClass().getName(), plugin);
-        }
-        allParameterValidators = getAllList(parameterValidatorMap);
-        log.info("scan validator plugin finish");
     }
 
     public static CachePlugin getCachePlugin(String className) {
-        if (!cachePluginMap.containsKey(className)) {
+        if (!cachePlugins.containsKey(className)) {
             throw new RuntimeException("Plugin not found: " + className);
         }
-        return (CachePlugin) cachePluginMap.get(className);
+        return cachePlugins.get(className);
     }
 
     public static TransformPlugin getTransformPlugin(String className) {
-        if (!transformPluginMap.containsKey(className)) {
+        if (!transformPlugins.containsKey(className)) {
             throw new RuntimeException("Plugin not found: " + className);
         }
-        return (TransformPlugin) transformPluginMap.get(className);
-    }
-
-    public static GlobalTransformPlugin getGlobalTransformPlugin(String className) {
-        if (!globalTransformPluginMap.containsKey(className)) {
-            throw new RuntimeException("Plugin not found: " + className);
-        }
-        return (GlobalTransformPlugin) globalTransformPluginMap.get(className);
+        return transformPlugins.get(className);
     }
 
     public static AlarmPlugin getAlarmPlugin(String className) {
-        if (!alarmPluginMap.containsKey(className)) {
+        if (!alarmPlugins.containsKey(className)) {
             throw new RuntimeException("Plugin not found: " + className);
         }
-        return (AlarmPlugin) alarmPluginMap.get(className);
+        return alarmPlugins.get(className);
     }
 
-    public static ParameterValidator getParameterValidator(String className) {
-        if (!parameterValidatorMap.containsKey(className)) {
-            throw new RuntimeException("Plugin not found: " + className);
-        }
-        return (ParameterValidator) parameterValidatorMap.get(className);
-    }
-
-    private static List<JSONObject> getAllList(Map<String, BasePlugin> map) {
-        List<JSONObject> collect = map.values().stream().map(t -> {
+    public static List<JSONObject> getAllCachePlugin() {
+        List<JSONObject> collect = cachePlugins.values().stream().map(t -> {
             JSONObject jsonObject = new JSONObject();
             jsonObject.put("className", t.getClass().getName());
             jsonObject.put("name", t.getName());
@@ -139,23 +80,29 @@ public class PluginManager {
         return collect;
     }
 
-    public static List<JSONObject> getAllCachePlugins() {
-        return allCachePlugins;
+    public static List<JSONObject> getAllTransformPlugin() {
+//        return transformPlugins.keySet();
+        List<JSONObject> collect = transformPlugins.values().stream().map(t -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("className", t.getClass().getName());
+            jsonObject.put("name", t.getName());
+            jsonObject.put("description", t.getDescription());
+            jsonObject.put("paramDescription", t.getParamDescription());
+            return jsonObject;
+        }).collect(Collectors.toList());
+        return collect;
     }
 
-    public static List<JSONObject> getAllAlarmPlugins() {
-        return allAlarmPlugins;
-    }
-
-    public static List<JSONObject> getAllTransformPlugins() {
-        return allTransformPlugins;
-    }
-
-    public static List<JSONObject> getAllGlobalTransformPlugins() {
-        return allGlobalTransformPlugins;
-    }
-
-    public static List<JSONObject> getAllParameterValidators() {
-        return allParameterValidators;
+    public static List<JSONObject> getAllAlarmPlugin() {
+//        return alarmPlugins.keySet();
+        List<JSONObject> collect = alarmPlugins.values().stream().map(t -> {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("className", t.getClass().getName());
+            jsonObject.put("name", t.getName());
+            jsonObject.put("description", t.getDescription());
+            jsonObject.put("paramDescription", t.getParamDescription());
+            return jsonObject;
+        }).collect(Collectors.toList());
+        return collect;
     }
 }

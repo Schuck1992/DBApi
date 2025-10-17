@@ -42,21 +42,21 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped lang="scss">
 .iconfont {
-  //color: #fff;
+  color: #fff;
   font-size: 20px !important;
   font-weight: 700;
   padding-right: 3px;
 }
 
 .main {
-  // background-color: #fff;
+  background-color: #fff;
   //max-width: 1500px;
   //margin: 0 auto;
   //border-radius: 5px;
   //box-shadow: 1px 1px 5px #72767b;
-  //padding: 20px;
+  padding: 20px;
   //min-height: calc(100vh - 100px);
 }
 

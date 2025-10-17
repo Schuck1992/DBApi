@@ -18,12 +18,11 @@ public abstract class AlarmPlugin implements BasePlugin {
 
     /**
      * 告警逻辑
-     * 
-     * @param e                异常
-     * @param config           API元数据
-     * @param request          请求
-     * @param localPluginParam 告警插件的局部参数
+     * @param e 异常
+     * @param config API元数据
+     * @param request 请求
+     * @param pluginParam 告警插件局部参数
      */
-    public abstract void alarm(Exception e, ApiConfig config, HttpServletRequest request, String localPluginParam);
+    public abstract void alarm(Exception e, ApiConfig config, HttpServletRequest request, String pluginParam);
 
 }

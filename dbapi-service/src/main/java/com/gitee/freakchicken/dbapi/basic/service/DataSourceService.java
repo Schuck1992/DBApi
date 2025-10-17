@@ -1,19 +1,15 @@
 package com.gitee.freakchicken.dbapi.basic.service;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gitee.freakchicken.dbapi.basic.dao.ApiConfigMapper;
 import com.gitee.freakchicken.dbapi.basic.dao.DataSourceMapper;
 import com.gitee.freakchicken.dbapi.basic.domain.DataSource;
 import com.gitee.freakchicken.dbapi.basic.util.DESUtils;
 import com.gitee.freakchicken.dbapi.basic.util.PoolManager;
 import com.gitee.freakchicken.dbapi.basic.util.UUIDUtil;
-import com.gitee.freakchicken.dbapi.common.ApiConfig;
 import com.gitee.freakchicken.dbapi.common.ResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -33,7 +29,6 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Slf4j
-@DS("meta-db")
 public class DataSourceService {
 
     @Autowired
@@ -50,7 +45,7 @@ public class DataSourceService {
         dataSource.setUpdateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
         dataSource.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 
-        // 新增数据源对密码加密
+        //新增数据源对密码加密
         try {
             dataSource.setPassword(DESUtils.encrypt(dataSource.getPassword()));
         } catch (Exception e) {
@@ -59,12 +54,12 @@ public class DataSourceService {
         dataSourceMapper.insert(dataSource);
     }
 
-    // @CacheEvict(value = "datasource", key = "#dataSource.id")
+    //    @CacheEvict(value = "datasource", key = "#dataSource.id")
     @Transactional
     public void update(DataSource dataSource) {
         dataSource.setUpdateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-        // 如果修改了密码, 需要对密码加密
-        if (dataSource.isEdit_password()) {
+        //如果修改了密码, 需要对密码加密
+        if (dataSource.isEdit_password()){
             try {
                 dataSource.setPassword(DESUtils.encrypt(dataSource.getPassword()));
             } catch (Exception e) {
@@ -77,35 +72,19 @@ public class DataSourceService {
 
     }
 
-    /**
-     * @param id
-     * @return
-     */
+    //    @CacheEvict(value = "datasource", key = "#id")
     @Transactional
     public ResponseDto delete(String id) {
-        List<ApiConfig> list = apiConfigMapper.selectList(null);
-        List<String> str = list.stream().filter(t -> {
-            String task = t.getTask();
-            JSONArray array = JSON.parseArray(task);
-            for (int i = 0; i < array.size(); i++) {
-                JSONObject jo = array.getJSONObject(i);
-                String datasourceId = jo.getString("datasourceId");
-                if (id.equals(datasourceId)) {
-                    return true;
-                }
-            }
-            return false;
-        }).map(item -> item.getName() + "(" + item.getId() + ")").collect(Collectors.toList());
-
-        if (str.size() == 0) {
+        int i = apiConfigMapper.countByDatasoure(id);
+        if (i == 0) {
             dataSourceMapper.deleteById(id);
 
             PoolManager.removeJdbcConnectionPool(id);
             cacheManager.getCache("datasource").evictIfPresent(id);
 
-            return ResponseDto.successWithMsg("Datasource delete success");
+            return ResponseDto.successWithMsg("delete success");
         } else {
-            return ResponseDto.fail("Can not delete! Used by API: " + str.stream().collect(Collectors.joining(";")));
+            return ResponseDto.fail("datasource has been used, can not delete");
         }
     }
 
@@ -117,8 +96,7 @@ public class DataSourceService {
 
     public List<DataSource> getAll() {
         List<DataSource> list = dataSourceMapper.selectList(null);
-        List<DataSource> collect = list.stream().sorted(Comparator.comparing(DataSource::getUpdateTime).reversed())
-                .collect(Collectors.toList());
+        List<DataSource> collect = list.stream().sorted(Comparator.comparing(DataSource::getUpdateTime).reversed()).collect(Collectors.toList());
         return collect;
     }
 

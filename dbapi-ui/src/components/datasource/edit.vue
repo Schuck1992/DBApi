@@ -20,9 +20,6 @@ export default {
   },
   methods: {
     save() {
-      if(!this.$refs.detail.checkValue()){
-        return;
-      }
       const data = this.$refs.detail.detail
       this.axios.post("/datasource/update", {
         "name": data.name,
@@ -36,10 +33,10 @@ export default {
         "driver": data.driver,
         "tableSql": data.tableSql
       }).then((response) => {
-        this.$message.success("Success")
+        this.$message.success("修改成功")
         this.$router.push("/datasource")
       }).catch((error) => {
-        this.$message.error("Failed")
+        this.$message.error("修改失败")
       })
     }
   },
@@ -50,8 +47,6 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-.mycontent{
-    padding: 20px;
-}
+<style scoped>
+
 </style>

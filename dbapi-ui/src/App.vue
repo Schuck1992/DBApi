@@ -76,7 +76,6 @@ h4 {
   margin: 0 10px 10px 0;
 }
 body{
-  background-color: #f3f3f321;
-  color:#606266;
+  /*background-color: #eaeaea;*/
 }
 </style>

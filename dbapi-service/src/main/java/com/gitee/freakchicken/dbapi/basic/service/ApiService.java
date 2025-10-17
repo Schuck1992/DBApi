@@ -3,7 +3,6 @@ package com.gitee.freakchicken.dbapi.basic.service;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gitee.freakchicken.dbapi.common.ApiConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -21,7 +20,6 @@ import java.util.stream.Collectors;
  **/
 @Service
 @Slf4j
-@DS("meta-db")
 public class ApiService {
 
     public Map<String, Object> getSqlParam(HttpServletRequest request, ApiConfig config) {

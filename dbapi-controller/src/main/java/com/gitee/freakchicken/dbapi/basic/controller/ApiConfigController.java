@@ -1,26 +1,5 @@
 package com.gitee.freakchicken.dbapi.basic.controller;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import javax.servlet.http.HttpServletResponse;
-
-import com.gitee.freakchicken.dbapi.basic.util.*;
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.DateFormatUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
@@ -31,12 +10,29 @@ import com.gitee.freakchicken.dbapi.basic.domain.Group;
 import com.gitee.freakchicken.dbapi.basic.service.ApiConfigService;
 import com.gitee.freakchicken.dbapi.basic.service.DataSourceService;
 import com.gitee.freakchicken.dbapi.basic.service.GroupService;
+import com.gitee.freakchicken.dbapi.basic.util.JdbcUtil;
+import com.gitee.freakchicken.dbapi.basic.util.PoolManager;
+import com.gitee.freakchicken.dbapi.basic.util.SqlEngineUtil;
 import com.gitee.freakchicken.dbapi.common.ApiConfig;
-import com.gitee.freakchicken.dbapi.common.ApiPluginConfig;
+import com.gitee.freakchicken.dbapi.common.ApiSql;
 import com.gitee.freakchicken.dbapi.common.ResponseDto;
 import com.github.freakchick.orange.SqlMeta;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @program: dbApi
@@ -65,46 +61,20 @@ public class ApiConfigController {
     String apiContext;
 
     @RequestMapping("/context")
-    public String getContext() {
+    public String add() {
         return apiContext;
     }
 
     @RequestMapping("/add")
-    public ResponseDto add(@RequestBody JSONObject jo) {
-        ApiConfig config = new ApiConfig();
-        config.setName(jo.getString("name"));
-        config.setPath(jo.getString("path"));
-        config.setNote(jo.getString("note"));
-        config.setGroupId(jo.getString("groupId"));
-        config.setContentType(jo.getString("contentType"));
-        config.setJsonParam(jo.getString("jsonParam"));
-        config.setParams(jo.getJSONArray("paramsJson").toString(SerializerFeature.WriteMapNullValue));
-        config.setAccess(jo.getInteger("access"));
-        config.setTask(jo.getJSONArray("taskJson").toString(SerializerFeature.WriteMapNullValue));
-        config.setStatus(Constants.API_STATUS_OFFLINE);
-
-        String id = UUIDUtil.id();
-        config.setId(id);
-        config.setCreateUserId(ThreadContainer.getCurrentThreadUserId());
-
-        JSONArray array = jo.getJSONArray("alarmPlugins");
-        array.add(jo.getJSONObject("cachePlugin"));
-        array.add(jo.getJSONObject("globalTransformPlugin"));
-
-        List<ApiPluginConfig> javaList = array.toJavaList(ApiPluginConfig.class);
-
-        List<ApiPluginConfig> collect = javaList.stream().filter(t -> t != null && StringUtils.isNotEmpty(t.getPluginName())).collect(Collectors.toList());
-        collect.forEach(t -> t.setApiId(id));
-
-        return apiConfigService.add(config, collect);
+    public ResponseDto add(@RequestBody ApiConfig apiConfig) {
+        return apiConfigService.add(apiConfig);
     }
 
-    @Deprecated
     @RequestMapping("/parseParam")
     public ResponseDto parseParam(String sql) {
         try {
             Set<String> set = SqlEngineUtil.getEngine().parseParameter(sql);
-            // 转化成前端需要的格式
+//            转化成前端需要的格式
             List<JSONObject> list = set.stream().map(t -> {
                 JSONObject object = new JSONObject();
                 object.put("value", t);
@@ -121,15 +91,15 @@ public class ApiConfigController {
         return apiConfigService.getAll();
     }
 
-    // 给前端使用的数据结构
+    //给前端使用的数据结构
     @RequestMapping("/getApiTree")
-    public List<JSONObject> getAllApiTree() {
-        return apiConfigService.getAllApiTree();
+    public JSONArray getApiTree() {
+        return apiConfigService.getAllDetail();
     }
 
     @RequestMapping("/search")
-    public List<ApiConfig> search(String name, String note, String path,  String groupId) {
-        return apiConfigService.search(name, note, path, groupId);
+    public List<ApiConfig> search(String keyword, String field, String groupId) {
+        return apiConfigService.search(keyword, field, groupId);
     }
 
     @RequestMapping("/detail/{id}")
@@ -138,44 +108,30 @@ public class ApiConfigController {
     }
 
     @RequestMapping("/delete/{id}")
-    public void delete(@PathVariable String id) {
+    public ApiConfig delete(@PathVariable String id) {
         apiConfigService.delete(id);
+        return null;
     }
 
     @RequestMapping("/update")
-    public ResponseDto update(@RequestBody JSONObject jo) {
-        ApiConfig config = new ApiConfig();
-        config.setId(jo.getString("id"));
-        config.setName(jo.getString("name"));
-        config.setPath(jo.getString("path"));
-        config.setNote(jo.getString("note"));
-        config.setGroupId(jo.getString("groupId"));
-        config.setContentType(jo.getString("contentType"));
-        config.setJsonParam(jo.getString("jsonParam"));
-        config.setParams(jo.getJSONArray("paramsJson").toString(SerializerFeature.WriteMapNullValue));
-        config.setAccess(jo.getInteger("access"));
-        config.setTask(jo.getJSONArray("taskJson").toString(SerializerFeature.WriteMapNullValue));
-        config.setStatus(Constants.API_STATUS_OFFLINE);
-
-        JSONArray array = jo.getJSONArray("alarmPlugins");
-        array.add(jo.getJSONObject("cachePlugin"));
-        array.add(jo.getJSONObject("globalTransformPlugin"));
-
-        List<ApiPluginConfig> javaList = array.toJavaList(ApiPluginConfig.class);
-        List<ApiPluginConfig> collect = javaList.stream().filter(t -> t !=null && StringUtils.isNotEmpty(t.getPluginName())).collect(Collectors.toList());
-
-        return apiConfigService.update(config, collect);
+    public ResponseDto update(@RequestBody ApiConfig apiConfig) {
+        return apiConfigService.update(apiConfig);
     }
 
     @RequestMapping("/online/{id}")
-    public void online(@PathVariable String id) {
-        apiConfigService.online(id);
+    public ApiConfig online(@PathVariable String id) {
+        String path = apiConfigService.getPath(id);
+        apiConfigService.online(id, path);
+        return null;
     }
 
     @RequestMapping("/offline/{id}")
-    public void offline(@PathVariable String id) {
-        apiConfigService.offline(id);
+    public ApiConfig offline(@PathVariable String id) {
+        String path = apiConfigService.getPath(id);
+        apiConfigService.offline(id, path);
+        return null;
     }
+
 
     @RequestMapping("/apiDocs")
     public void apiDocs(String ids, HttpServletResponse response) {
@@ -183,7 +139,7 @@ public class ApiConfigController {
         String docs = apiConfigService.apiDocs(collect);
         response.setContentType("application/x-msdownload;charset=utf-8");
         response.setHeader("Content-Disposition", "attachment; filename=API docs.md");
-        OutputStream os = null; // 输出流
+        OutputStream os = null; //输出流
         try {
             os = response.getOutputStream();
             os.write(docs.getBytes("utf-8"));
@@ -199,16 +155,10 @@ public class ApiConfigController {
         }
     }
 
-    /**
-     * 导出API 配置
-     *
-     * @param ids
-     * @param response
-     */
     @RequestMapping("/downloadConfig")
     public void downloadConfig(String ids, HttpServletResponse response) {
         List<String> collect = Arrays.asList(ids.split(","));
-        JSONObject jo = apiConfigService.exportAPI(collect);
+        JSONObject jo = apiConfigService.selectBatch(collect);
         String s = jo.toString(SerializerFeature.WriteMapNullValue);
         response.setContentType("application/x-msdownload;charset=utf-8");
         response.setHeader("Content-Disposition", "attachment; filename=api_config.json");
@@ -234,7 +184,7 @@ public class ApiConfigController {
         List<Group> list = groupService.selectBatch(collect);
         String s = JSON.toJSONString(list);
         response.setContentType("application/x-msdownload;charset=utf-8");
-        // response.setHeader("Content-Disposition", "attachment; filename=api配置.json");
+//        response.setHeader("Content-Disposition", "attachment; filename=api配置.json");
         OutputStream os = null;
         try {
             os = response.getOutputStream();
@@ -251,36 +201,24 @@ public class ApiConfigController {
         }
     }
 
-    /**
-     * 导入API配置
-     *
-     * @param file
-     * @throws IOException
-     */
     @RequestMapping(value = "/import", produces = "application/json;charset=UTF-8")
-    public void importAPI(@RequestParam("file") MultipartFile file) throws IOException {
+    public void uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
+
         String s = IOUtils.toString(file.getInputStream(), "utf-8");
         JSONObject jsonObject = JSON.parseObject(s);
-        List<ApiConfig> apis = jsonObject.getJSONArray("api").toJavaList(ApiConfig.class);
-        apis.stream().forEach(t -> {
-           t.setCreateUserId(ThreadContainer.getCurrentThreadUserId());
-            t.setCreateTime(DateFormatUtils.format(new Date(),"yyyy-MM-dd hh:mm:ss"));
-            t.setUpdateTime(DateFormatUtils.format(new Date(),"yyyy-MM-dd hh:mm:ss"));
-        });
-        List<ApiPluginConfig> plugins = jsonObject.getJSONArray("plugins").toJavaList(ApiPluginConfig.class);
-        apiConfigService.importAPI(apis, plugins);
+        List<ApiConfig> configs = JSON.parseArray(jsonObject.getJSONArray("api").toJSONString(), ApiConfig.class);
+        List<ApiSql> sqls = JSON.parseArray(jsonObject.getJSONArray("sql").toJSONString(), ApiSql.class);
+        apiConfigService.insertBatch(configs, sqls);
+
     }
 
     @RequestMapping(value = "/importGroup", produces = "application/json;charset=UTF-8")
     public void importGroup(@RequestParam("file") MultipartFile file) throws IOException {
+
         String s = IOUtils.toString(file.getInputStream(), "utf-8");
         List<Group> configs = JSON.parseArray(s, Group.class);
-        configs.stream().forEach(t -> {
-            t.setCreateUserId(ThreadContainer.getCurrentThreadUserId());
-            t.setCreateTime(DateFormatUtils.format(new Date(),"yyyy-MM-dd hh:mm:ss"));
-            t.setUpdateTime(DateFormatUtils.format(new Date(),"yyyy-MM-dd hh:mm:ss"));
-        });
         groupService.insertBatch(configs);
+
     }
 
     @RequestMapping("/sql/execute")

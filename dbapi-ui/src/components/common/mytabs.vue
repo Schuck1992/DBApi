@@ -84,7 +84,7 @@ export default {
   },
 };
 </script>
-<style lang="less" scoped>
+<style lang="scss" scoped>
 .tabs {
   background-color: rgba(234, 149, 149, 0.35);
   position: relative;

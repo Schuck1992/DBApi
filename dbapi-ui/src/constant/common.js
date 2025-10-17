@@ -9,25 +9,12 @@ const DATA_TYPE = {
   ARRAY_DATE: 'Array<date>',
 }
 
-const EXECUTOR_TYPE = {
-  SQL_EXECUTOR: 1,
-  ES_DSL_EXECUTOR: 2,
-  HTTP_EXECUTOR: 3
-}
-
-const PLUGIN_TYPE = {
-  CACHE_PLUGIN: 1,
-  ALARM_PLUGIN: 2,
-  GLOBALTRANSFORM_PLUGIN: 3
-}
-
-
 const CONTENT_TYPE = {
   FORM_URLENCODED: "application/x-www-form-urlencoded",
   JSON: "application/json"
 }
 
-const PRIVILEGE = {
+const PREVILEGE = {
   PRIVATE: 0,
   PUBLIC: 1
 }
@@ -35,7 +22,5 @@ const PRIVILEGE = {
 export {
   DATA_TYPE,
   CONTENT_TYPE,
-  PRIVILEGE,
-  EXECUTOR_TYPE,
-  PLUGIN_TYPE
+  PREVILEGE
 }

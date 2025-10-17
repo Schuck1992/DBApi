@@ -3,7 +3,6 @@ package com.gitee.freakchicken.dbapi.basic.conf;
 import com.gitee.freakchicken.dbapi.basic.service.UserService;
 import com.gitee.freakchicken.dbapi.basic.domain.User;
 import com.gitee.freakchicken.dbapi.basic.util.JwtUtils;
-import com.gitee.freakchicken.dbapi.basic.util.ThreadContainer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpMethod;
@@ -19,7 +18,6 @@ import java.io.PrintWriter;
 @Component
 @Slf4j
 public class JwtAuthenticationInterceptor implements HandlerInterceptor {
-
     @Autowired
     UserService userService;
 
@@ -45,7 +43,7 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             if (token == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 writer = response.getWriter();
-                writer.append("No Token!");
+                writer.append("\"无token，请重新登录\"");
                 return false;
             }
 
@@ -56,20 +54,18 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             if (user == null) {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 writer = response.getWriter();
-                writer.append("User not exists!");
+                writer.append("用户不存在，请重新登录");
                 return false;
             }
 
             // 验证 token
             boolean b = JwtUtils.verifyToken(token, user.getPassword());
             if (b) {
-                request.setAttribute("id", user.getId());
-                ThreadContainer.setCurrentThreadUser(user);
                 return true;
             } else {
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 writer = response.getWriter();
-                writer.append("Token Invalid!");
+                writer.append("token无效，请重新登录");
                 return false;
             }
 
@@ -77,7 +73,6 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
             e.printStackTrace();
             return false;
         } finally {
-
             if (writer != null) {
                 writer.close();
             }
@@ -93,6 +88,5 @@ public class JwtAuthenticationInterceptor implements HandlerInterceptor {
 
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object o, Exception e) throws Exception {
-        ThreadContainer.clearCurrentThreadUser();
     }
 }

@@ -16,11 +16,7 @@ export default {
     return {}
   },
   methods: {
-    
     save() {
-      if(!this.$refs.detail.checkValue()){
-        return;
-      }
       const data = this.$refs.detail.detail
       this.axios.post("/datasource/add", {
         "name": data.name,
@@ -47,8 +43,6 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
-.mycontent{
-    padding: 20px;
-}
+<style scoped>
+
 </style>

@@ -6,7 +6,7 @@
 
     <groupId>com.gitee.freakchicken.dbapi</groupId>
     <artifactId>dbapi</artifactId>
-    <version>4.0.0</version>
+    <version>3.1.2</version>
 
     <name>DBApi</name>
     <description>build http api from sql without other code</description>
@@ -244,8 +244,8 @@
 
     <licenses>
         <license>
-            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3</name>
-            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>

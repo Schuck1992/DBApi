@@ -12,7 +12,7 @@
         <div class="bottom">
           <slot></slot>
         </div>
-        <div v-if="options.length == 0" class="none">{{$t('m.no_data')}}</div>
+        <div v-if="options.length == 0" class="none">暂无数据</div>
       </div>
 
 
@@ -90,7 +90,7 @@ export default {
 };
 </script>
 
-<style lang="less" scoped>
+<style lang="scss" scoped>
 
 
 .form {

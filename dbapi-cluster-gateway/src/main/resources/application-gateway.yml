@@ -24,7 +24,7 @@ spring:
 logging:
   config: classpath:logback-gateway.xml
 
-#################################### please configure properties below #####################################
+#################################### please modify config below #####################################
 
 server:
   port: 8525

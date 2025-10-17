@@ -26,9 +26,7 @@ export default {
 }
 </script>
 
-<style scoped lang="less">
+<style scoped>
 
-.mycontent{
-    padding: 20px;
-}
+
 </style>

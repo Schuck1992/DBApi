@@ -17,12 +17,13 @@ public interface ApiConfigMapper extends BaseMapper<ApiConfig> {
             "select * from api_config\n" +
             "<where>\n" +
             "<if test='groupId != null and groupId !=\"\"'> group_id = #{groupId} </if>\n" +
-            "\t<if test='name != null and name !=\"\"'> and name like #{name} </if>\n" +
-            "\t<if test='note != null and note !=\"\"'> and note like #{note} </if>\n" +
-            "\t<if test='path != null and path !=\"\"'> and path like #{path} </if>\n" +
+            "<if test='keyword != null and keyword !=\"\"'>\n" +
+            "\t<if test='field != null and field !=\"\"'> and ${field} like #{keyword} </if>\n" +
+            "\t<if test='field == null or field ==\"\"'> and (name like #{keyword} or note like #{keyword} or path like #{keyword} )</if>\n" +
+            "</if>\n" +
             "</where>" +
             "</script>")
-    List<ApiConfig> search(@Param("name")String name, @Param("note")String note, @Param("path")String path, @Param("groupId") String groupId);
+    List<ApiConfig> selectByKeyword(@Param("keyword") String keyword, @Param("field") String field, @Param("groupId") String groupId);
 
     @Select("select count(1) from api_config where path=#{path}")
     Integer selectCountByPath(String path);
@@ -30,8 +31,8 @@ public interface ApiConfigMapper extends BaseMapper<ApiConfig> {
     @Select("select count(1) from api_config where path=#{path} and id != #{id}")
     Integer selectCountByPathWhenUpdate(@Param("path") String path, @Param("id") String id);
 
-//     @Select("select count(1) from api_config where datasource_id = #{id}")
-//     int countByDatasoure(String id);
+    @Select("select count(1) from api_config where datasource_id = #{id}")
+    int countByDatasoure(String id);
 
     @Select("select count(1) from api_config where group_id = #{id}")
     int selectCountByGroup(String id);
@@ -43,7 +44,4 @@ public interface ApiConfigMapper extends BaseMapper<ApiConfig> {
     })
     @Select("select t1.id,t1.name,t2.name as group_name from api_config t1 join api_group t2 on t1.group_id = t2.id")
     List<ApiDto> getAllDetail();
-
-    @Select("select * from api_config where group_id = #{groupId}")
-    List<ApiConfig> selectByGroup(String groupId);
 }

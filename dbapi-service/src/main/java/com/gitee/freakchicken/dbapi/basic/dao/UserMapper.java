@@ -10,7 +10,9 @@ import org.apache.ibatis.annotations.Update;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
-    @Select("select * from user where username = #{username} and password = #{password}")
+    @Select("select * from user where username = #{username} and password = #{password} limit 1")
     User login(@Param("username") String username, @Param("password") String password);
 
+    @Update("update user set password = #{password} where username = 'admin' ")
+    void updatePassword(String password);
 }

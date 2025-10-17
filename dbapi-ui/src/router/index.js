@@ -12,14 +12,14 @@ import datasourceEdit from '../components/datasource/edit'
 import datasourceAdd from '../components/datasource/add'
 import datasourceDetail from '../components/datasource/detail'
 import api from '../components/api/api'
-import monitor from '../components/monitor/monitor'
 import apiAdd from '../components/api/add'
 import apiEdit from '../components/api/edit'
 import detail from '../components/api/detail'
 import request from '../components/api/request'
-import client from '../components/client/client'
-import clientAdd from '../components/client/add'
-import firewall from '../components/security/firewall'
+import token from '../components/token/token'
+import tokenAdd from '../components/token/add'
+import user from '../components/setting/user'
+import firewall from '../components/setting/firewall'
 
 Vue.use(VueRouter)
 
@@ -39,14 +39,14 @@ const routes = [
       { path: '/datasource/detail', component: datasourceDetail },
       { path: '/datasource/add', component: datasourceAdd },
       { path: '/api', name: 'api', component: api },
-      { path: '/monitor', name: 'monitor', component: monitor },
       { path: '/api/add', name: 'apiAdd', component: apiAdd },
       { path: '/api/edit', name: 'apiEdit', component: apiEdit },
       { path: '/api/detail', name: 'detail', component: detail },
       { path: '/api/request', name: 'request', component: request },
-      { path: '/client', component: client },
-      { path: '/client/add', component: clientAdd },
-      { path: '/security/firewall', component: firewall }
+      { path: '/token', component: token },
+      { path: '/token/add', component: tokenAdd },
+      { path: '/setting/password', component: user },
+      { path: '/setting/firewall', component: firewall }
     ]
   }
 ]

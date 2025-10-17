@@ -3,7 +3,7 @@
 
     <el-form label-width="200px">
       <el-form-item :label="$t('m.database')">
-        <el-select v-model="detail.type" @change="selectDB">
+        <el-select v-model="detail.type" placeholder="请选择" @change="selectDB">
           <el-option v-for="item in options" :key="item.label" :label="item.label" :value="item.value">
             <db-icon :type="item.value"></db-icon>
             <span>{{ item.label }}</span>
@@ -31,17 +31,17 @@
       </el-form-item>
 
       <el-form-item :label="$t('m.password')"  prop="password" style="display: inline-block">
-        <el-input prefix-icon="el-icon-lock"  style="min-width: 400px;" :type="[flag?'text':'password']"  v-model="detail.password" :disabled="!detail.edit_password">
+        <el-input prefix-icon="el-icon-lock" placeholder="请输入密码" style="min-width: 400px;" :type="[flag?'text':'password']"  v-model="detail.password" :disabled="!detail.edit_password">
           <i slot="suffix" :class="[flag?'el-icon-minus':'el-icon-view']" style="margin-top:8px;font-size:18px;" autocomplete="auto"  @click="flag=!flag" />
         </el-input>
       </el-form-item>
       <el-form-item :label="$t('m.edit_password')" label-width="100%" style="margin-left:20px; display: inline-block">
         <el-checkbox v-model="detail.edit_password" @change="checked"></el-checkbox>
       </el-form-item>
-    <!--   <el-form-item :label="$t('m.sql_query_all_table_name')">
+      <el-form-item :label="$t('m.sql_query_all_table_name')">
         <el-input v-model="detail.tableSql"></el-input>
         <el-alert type="warning" :title="$t('m.ds_sql_tip')" show-icon style="margin-top: 10px;"></el-alert>
-      </el-form-item> -->
+      </el-form-item>
     </el-form>
 
     <el-button type="primary" @click="connect" plain style="margin: 10px 0;">{{$t('m.test_connection')}}</el-button>
@@ -58,7 +58,7 @@ export default {
       options: [{label: 'mysql', value: 'mysql'}, {label: 'postgresql',value: 'postgresql'}, {label: 'hive',value: 'hive'},
         {label: 'sqlserver',value: 'sqlserver'}, {label: 'clickhouse',value: 'clickhouse'}, {label: 'kylin',value: 'kylin'},
          {label: 'oracle',value: 'oracle'}, {label: 'TDengine',value: 'TDengine'},
-        {label: 'doris',value: 'doris'},{label: 'others',value:'others'}],
+        {label: 'doris',value: 'doris'},{label: '其他',value:'others'}],
       detail: {
         url: null,
         name: null,
@@ -87,7 +87,7 @@ export default {
           sql: 'show tables'
         },
         sqlserver: {
-          url: 'jdbc:sqlserver://localhost:1433;databaseName=<db>',
+          url: 'jdbc:microsoft:sqlserver://localhost:1433;databaseName=<db>',
           driver: 'com.microsoft.sqlserver.jdbc.SQLServerDriver',
           sql: 'select * from sys.tables'
         },
@@ -120,44 +120,10 @@ export default {
   },
   props: ["id"],
   methods: {
-    isNull(item) {
-      if (typeof item == 'undefined' || item == null || item == '') {
-        return true
-      } else {
-        return false
-      }
-    },
-    checkValue(){
-      if(this.isNull(this.detail.name)){
-        this.$message.warning("Datasource name empty!")
-        return false
-      }
-      if(this.isNull(this.detail.type)){
-        this.$message.warning("Datasource type empty!")
-        return false
-      }
-      if(this.isNull(this.detail.url)){
-        this.$message.warning("Datasource url empty!")
-        return false
-      }
-      if(this.isNull(this.detail.driver)){
-        this.$message.warning("Datasource driver empty!")
-        return false
-      }
-      if(this.isNull(this.detail.username)){
-        this.$message.warning("Datasource username empty!")
-        return false
-      }
-      if(this.isNull(this.detail.password)){
-        this.$message.warning("Datasource password empty!")
-        return false
-      }
-      return true;
-    },
     checked(){
-      // if (this.detail.edit_password){
-      //   this.detail.password = null;
-      // }
+      if (this.detail.edit_password){
+        this.detail.password = null;
+      }
     },
     selectDB() {
       this.detail.url = (this.ds[this.detail.type]).url

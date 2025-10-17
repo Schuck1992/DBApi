@@ -1,39 +1,32 @@
 package com.gitee.freakchicken.dbapi.basic.service;
 
-import java.text.MessageFormat;
-import java.text.SimpleDateFormat;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import com.gitee.freakchicken.dbapi.basic.dao.GroupMapper;
-import com.gitee.freakchicken.dbapi.basic.domain.Group;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+import com.gitee.freakchicken.dbapi.basic.dao.ApiConfigMapper;
+import com.gitee.freakchicken.dbapi.basic.dao.ApiSqlMapper;
+import com.gitee.freakchicken.dbapi.basic.dao.DataSourceMapper;
+import com.gitee.freakchicken.dbapi.basic.dao.AlarmMapper;
+import com.gitee.freakchicken.dbapi.basic.domain.ApiDto;
+import com.gitee.freakchicken.dbapi.basic.util.UUIDUtil;
+import com.gitee.freakchicken.dbapi.common.ApiConfig;
+import com.gitee.freakchicken.dbapi.basic.domain.Alarm;
+import com.gitee.freakchicken.dbapi.common.ApiSql;
+import com.gitee.freakchicken.dbapi.common.ResponseDto;
+import com.gitee.freakchicken.dbapi.plugin.CachePlugin;
+import com.gitee.freakchicken.dbapi.plugin.PluginManager;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.baomidou.dynamic.datasource.annotation.DS;
-import com.gitee.freakchicken.dbapi.basic.dao.ApiConfigMapper;
-import com.gitee.freakchicken.dbapi.basic.dao.ApiPluginConfigMapper;
-import com.gitee.freakchicken.dbapi.basic.dao.DataSourceMapper;
-import com.gitee.freakchicken.dbapi.basic.util.Constants;
-import com.gitee.freakchicken.dbapi.common.ApiConfig;
-import com.gitee.freakchicken.dbapi.common.ApiPluginConfig;
-import com.gitee.freakchicken.dbapi.common.ResponseDto;
-import com.gitee.freakchicken.dbapi.plugin.CachePlugin;
-import com.gitee.freakchicken.dbapi.plugin.PluginManager;
-
-import lombok.extern.slf4j.Slf4j;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @program: dbApi
@@ -43,33 +36,32 @@ import lombok.extern.slf4j.Slf4j;
  **/
 @Slf4j
 @Service
-@DS("meta-db")
 public class ApiConfigService {
 
     @Autowired
     ApiConfigMapper apiConfigMapper;
     @Autowired
-    GroupMapper groupMapper;
-    @Autowired
     DataSourceMapper dataSourceMapper;
-
     @Autowired
-    ApiPluginConfigMapper pluginConfigMapper;
+    ApiSqlMapper apiSqlMapper;
+    @Autowired
+    AlarmMapper alarmMapper;
     @Autowired
     CacheManager cacheManager;
 
-    @Value("${dbapi.api.context}")
-    String apiContext;
-
     @Transactional
-    public ResponseDto add(ApiConfig apiConfig, List<ApiPluginConfig> list) {
+    public ResponseDto add(ApiConfig apiConfig) {
+
         int size = apiConfigMapper.selectCountByPath(apiConfig.getPath());
         if (size > 0) {
             return ResponseDto.fail("Path has been used!");
         } else {
+            apiConfig.setStatus(0);
+            String id = UUIDUtil.id();
+            apiConfig.setId(id);
 
             if (MediaType.APPLICATION_JSON_VALUE.equals(apiConfig.getContentType())) {
-                apiConfig.setParams("[]"); // 不能设置null 前端使用会报错
+                apiConfig.setParams("[]"); //不能设置null 前端使用会报错
             } else if (MediaType.APPLICATION_FORM_URLENCODED_VALUE.equals(apiConfig.getContentType())) {
                 apiConfig.setJsonParam(null);
             }
@@ -77,169 +69,141 @@ public class ApiConfigService {
             String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
             apiConfig.setCreateTime(now);
             apiConfig.setUpdateTime(now);
+
             apiConfigMapper.insert(apiConfig);
 
-            list.stream().forEach(t -> {
-                pluginConfigMapper.insert(t);
+            apiConfig.getSqlList().stream().forEach(t -> {
+                t.setApiId(apiConfig.getId());
+                apiSqlMapper.insert(t);
             });
 
-            return ResponseDto.successWithMsg("Create API success");
+            if (StringUtils.isNoneBlank(apiConfig.getAlarmPlugin())) {
+                Alarm alarm = new Alarm();
+                alarm.setApiId(id);
+                alarm.setAlarmPlugin(apiConfig.getAlarmPlugin());
+                alarm.setAlarmPluginParam(apiConfig.getAlarmPluginParam());
+                alarmMapper.insert(alarm);
+            }
+            return ResponseDto.successWithMsg("create API success");
         }
 
     }
 
+    //    @CacheEvict(value = "api", key = "#apiConfig.path")
     @Transactional
-    public ResponseDto update(ApiConfig apiConfig, List<ApiPluginConfig> pluginConfigs) {
+    public ResponseDto update(ApiConfig apiConfig) {
 
         int size = apiConfigMapper.selectCountByPathWhenUpdate(apiConfig.getPath(), apiConfig.getId());
         if (size > 0) {
             return ResponseDto.fail("Path has been used");
         } else {
-
-            // clean data cache if cache plugin configured before
-            ApiConfig oldConfig = detail(apiConfig.getId());
-            cleanDataCacheAndMetaCache(oldConfig);
+            ApiConfig oldConfig = apiConfigMapper.selectById(apiConfig.getId());
+            apiConfig.setStatus(0);
+            apiConfig.setUpdateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
 
             if (MediaType.APPLICATION_JSON_VALUE.equals(apiConfig.getContentType())) {
-                apiConfig.setParams("[]"); // 不能设置null 前端使用会报错
+                apiConfig.setParams("[]"); //不能设置null 前端使用会报错
             } else if (MediaType.APPLICATION_FORM_URLENCODED_VALUE.equals(apiConfig.getContentType())) {
                 apiConfig.setJsonParam(null);
             }
-            String now = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            apiConfig.setUpdateTime(now);
 
             apiConfigMapper.updateById(apiConfig);
-            pluginConfigMapper.deleteByApiId(apiConfig.getId());
-            pluginConfigs.stream().forEach(t -> {
-                pluginConfigMapper.insert(t);
+
+            apiSqlMapper.deleteByApiID(apiConfig.getId());
+            apiConfig.getSqlList().stream().forEach(t -> {
+                t.setApiId(apiConfig.getId());
+                apiSqlMapper.insert(t);
             });
 
-            return ResponseDto.successWithMsg("Update API Success");
+            alarmMapper.deleteByApiID(apiConfig.getId());
+            if (StringUtils.isNoneBlank(apiConfig.getAlarmPlugin())) {
+                Alarm alarm = new Alarm();
+                alarm.setApiId(apiConfig.getId());
+                alarm.setAlarmPlugin(apiConfig.getAlarmPlugin());
+                alarm.setAlarmPluginParam(apiConfig.getAlarmPluginParam());
+                alarmMapper.insert(alarm);
+            }
+
+            //清除缓存插件对应的所有缓存
+            if (StringUtils.isNoneBlank(oldConfig.getCachePlugin())) {
+                try {
+                    CachePlugin cachePlugin = PluginManager.getCachePlugin(oldConfig.getCachePlugin());
+                    cachePlugin.clean(oldConfig);
+                    log.debug("clean cache from old config when update api");
+                } catch (Exception e) {
+                    log.error("clean cache failed when update api", e);
+                }
+            }
+
+            cacheManager.getCache("api").evictIfPresent(oldConfig.getPath());
+
+            return ResponseDto.successWithMsg("update API success");
         }
 
     }
 
+    //    @CacheEvict(value = "api", key = "#path")
     @Transactional
     public void delete(String id) {
-        ApiConfig oldConfig = detail(id);
-        cleanDataCacheAndMetaCache(oldConfig);
-
+        ApiConfig oldConfig = apiConfigMapper.selectById(id);
         apiConfigMapper.deleteById(id);
-        pluginConfigMapper.deleteByApiId(id);
+        apiSqlMapper.deleteByApiID(id);
+        alarmMapper.deleteByApiID(id);
 
-    }
-
-    /**
-     * 刪除API相关的元数据缓存和 API配置的插件对应的数据缓存
-     *
-     * @param apiConfig
-     */
-    private void cleanDataCacheAndMetaCache(ApiConfig apiConfig) {
-        // 清除API相关的元数据缓存
-        cacheManager.getCache("api").evictIfPresent(apiConfig.getPath());
-
-        if (apiConfig.getCachePlugin() != null) {
+        //清除所有缓存
+        if (StringUtils.isNoneBlank(oldConfig.getCachePlugin())) {
             try {
-                CachePlugin cachePlugin = PluginManager.getCachePlugin(apiConfig.getCachePlugin().getPluginName());
-                cachePlugin.clean(apiConfig, apiConfig.getCachePlugin().getPluginParam());
-                log.debug("clean data cache when delete/update/offline api");
+                CachePlugin cachePlugin = PluginManager.getCachePlugin(oldConfig.getCachePlugin());
+                cachePlugin.clean(oldConfig);
+                log.debug("delete api then clean cache");
             } catch (Exception e) {
-                log.error("clean cache failed when delete/update/offline api", e);
+                log.error("clean cache failed when delete api", e);
             }
         }
+        cacheManager.getCache("api").evictIfPresent(oldConfig.getPath());
+
     }
 
-    /**
-     * get API full detail
-     * 
-     * @param id
-     * @return
-     */
     public ApiConfig detail(String id) {
         ApiConfig apiConfig = apiConfigMapper.selectById(id);
-        enhanceApiConfig(apiConfig);
-        return apiConfig;
-    }
-
-    private void enhanceApiConfig(ApiConfig apiConfig) {
-        if (apiConfig != null) {
-            apiConfig.setTaskJson(JSON.parseArray(apiConfig.getTask()));
-            apiConfig.setParamsJson(JSON.parseArray(apiConfig.getParams()));
-
-            List<ApiPluginConfig> alarmPlugins = pluginConfigMapper.selectAlarmPlugins(apiConfig.getId());
-            apiConfig.setAlarmPlugins(alarmPlugins);
-
-            ApiPluginConfig cachePlugin = pluginConfigMapper.selectCachePlugin(apiConfig.getId());
-            apiConfig.setCachePlugin(cachePlugin);
-
-            ApiPluginConfig globalTransformPlugin = pluginConfigMapper.selectGlobalTransformPlugin(apiConfig.getId());
-            apiConfig.setGlobalTransformPlugin(globalTransformPlugin);
+        List<ApiSql> list = apiSqlMapper.selectByApiId(apiConfig.getId());
+        apiConfig.setSqlList(list);
+        List<Alarm> alarms = alarmMapper.selectByApiId(apiConfig.getId());
+        if (alarms.size() > 0) {
+            apiConfig.setAlarmPlugin(alarms.get(0).getAlarmPlugin());
+            apiConfig.setAlarmPluginParam(alarms.get(0).getAlarmPluginParam());
         }
+        return apiConfig;
     }
 
     public List<ApiConfig> getAll() {
         List<ApiConfig> list = apiConfigMapper.selectList(null);
-        List<ApiConfig> collect = list.stream().sorted(Comparator.comparing(ApiConfig::getUpdateTime).reversed())
-                .collect(Collectors.toList());
+        List<ApiConfig> collect = list.stream().sorted(Comparator.comparing(ApiConfig::getUpdateTime).reversed()).collect(Collectors.toList());
         return collect;
     }
 
-    /**
-     * 给前端使用的数据格式
-     *
-     * @return
-     */
-    public List<JSONObject> getAllApiTree() {
+    public JSONArray getAllDetail() {
+        List<ApiDto> list = apiConfigMapper.getAllDetail();
 
-        List<Group> groups = groupMapper.selectList(null);
-        List<JSONObject> list = groups.stream().sorted(Comparator.comparing(Group::getUpdateTime)).map(g -> {
-            List<ApiConfig> apiConfigs = apiConfigMapper.selectByGroup(g.getId());
-            List<JSONObject> children = apiConfigs.stream().sorted(Comparator.comparing(ApiConfig::getUpdateTime)).map(t -> {
-                JSONObject jo = new JSONObject();
-                jo.put("name", t.getName());
-                jo.put("id", t.getId());
-                jo.put("type","api");
-                jo.put("access",t.getAccess());
-                jo.put("status",t.getStatus());
-                return jo;
-            }).collect(Collectors.toList());
+        Map<String, List<ApiDto>> map = list.stream().collect(Collectors.groupingBy(ApiDto::getGroupName));
 
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.put("name", g.getName());
-            jsonObject.put("id", g.getId());
-            jsonObject.put("type","group");
-            jsonObject.put("children",children);
-            return jsonObject;
-        }).collect(Collectors.toList());
-
-        return list;
-//        List<ApiDto> list = apiConfigMapper.getAllDetail();
-//
-//        Map<String, List<ApiDto>> map = list.stream().collect(Collectors.groupingBy(ApiDto::getGroupName));
-//
-//        JSONArray array = new JSONArray();
-//        map.keySet().forEach(t -> {
-//            JSONObject jo = new JSONObject();
-//            jo.put("name", t);
-//            List<ApiDto> apiDtos = map.get(t);
-//            jo.put("children", apiDtos);
-//            array.add(jo);
-//        });
-//        return array;
+        JSONArray array = new JSONArray();
+        map.keySet().forEach(t -> {
+            JSONObject jo = new JSONObject();
+            jo.put("name", t);
+            List<ApiDto> apiDtos = map.get(t);
+            jo.put("children", apiDtos);
+            array.add(jo);
+        });
+        return array;
 
     }
 
-    public List<ApiConfig> search(String name, String note, String path, String groupId) {
-        if (StringUtils.isNoneBlank(name)) {
-            name = "%" + name + "%";
+    public List<ApiConfig> search(String keyword, String field, String groupId) {
+        if (StringUtils.isNoneBlank(keyword)) {
+            keyword = "%" + keyword + "%";
         }
-        if (StringUtils.isNoneBlank(note)) {
-            note = "%" + note + "%";
-        }
-        if (StringUtils.isNoneBlank(path)) {
-            path = "%" + path + "%";
-        }
-        return apiConfigMapper.search(name, note, path, groupId);
+        return apiConfigMapper.selectByKeyword(keyword, field, groupId);
     }
 
     /**
@@ -247,22 +211,47 @@ public class ApiConfigService {
      */
     @Cacheable(value = "api", key = "#path", unless = "#result == null")
     public ApiConfig getConfig(String path) {
+        log.info("get [{}] api config from db",path);
         ApiConfig apiConfig = apiConfigMapper.selectByPathOnline(path);
-        enhanceApiConfig(apiConfig);
+        if(Objects.isNull(apiConfig)){
+            log.warn("can't get [{}] api config from db",path);
+            return null;
+        }
+        List<ApiSql> apiSqls = apiSqlMapper.selectByApiId(apiConfig.getId());
+        apiConfig.setSqlList(apiSqls);
+        List<Alarm> alarms = alarmMapper.selectByApiId(apiConfig.getId());
+        if (alarms.size() > 0) {
+            apiConfig.setAlarmPlugin(alarms.get(0).getAlarmPlugin());
+            apiConfig.setAlarmPluginParam(alarms.get(0).getAlarmPluginParam());
+        }
         return apiConfig;
     }
 
-    public void online(String id) {
+    public void online(String id, String path) {
         ApiConfig apiConfig = apiConfigMapper.selectById(id);
-        apiConfig.setStatus(Constants.API_STATUS_ONLINE);
+        apiConfig.setStatus(1);
         apiConfigMapper.updateById(apiConfig);
     }
 
-    public void offline(String id) {
-        ApiConfig apiConfig = detail(id);
-        cleanDataCacheAndMetaCache(apiConfig);
-        apiConfig.setStatus(Constants.API_STATUS_OFFLINE);
+    //    @CacheEvict(value = "api", key = "#path")
+    public void offline(String id, String path) {
+
+        ApiConfig apiConfig = apiConfigMapper.selectById(id);
+        apiConfig.setStatus(0);
         apiConfigMapper.updateById(apiConfig);
+
+        cacheManager.getCache("api").evictIfPresent(path);
+
+        if (StringUtils.isNoneBlank(apiConfig.getCachePlugin())) {
+            try {
+                CachePlugin cachePlugin = PluginManager.getCachePlugin(apiConfig.getCachePlugin());
+                cachePlugin.clean(apiConfig);
+                log.debug("offline api then clean cache");
+            } catch (Exception e) {
+                log.error("clean cache error", e);
+            }
+        }
+
     }
 
     public String getPath(String id) {
@@ -273,9 +262,10 @@ public class ApiConfigService {
         StringBuffer temp = new StringBuffer("# 接口文档\n---\n");
         List<ApiConfig> list = apiConfigMapper.selectBatchIds(ids);
         list.stream().forEach(t -> {
-            String templ = "## {0}\n- 接口地址： /{1}/{2}\n- 接口备注：{3}\n- Content-Type：{4}\n";
-            temp.append(
-                    MessageFormat.format(templ, t.getName(), apiContext, t.getPath(), t.getNote(), t.getContentType()));
+            temp.append("## ").append(t.getName()).append("\n- 接口地址： /api/").append(t.getPath())
+                    .append("\n- 接口备注：").append(t.getNote());
+            temp.append("\n- Content-Type：").append(t.getContentType());
+
             temp.append("\n- 请求参数：");
             if (MediaType.APPLICATION_FORM_URLENCODED_VALUE.equalsIgnoreCase(t.getContentType())) {
                 String params = t.getParams();
@@ -290,8 +280,11 @@ public class ApiConfigService {
                         JSONObject jsonObject = array.getJSONObject(i);
                         String name = jsonObject.getString("name");
                         String type = jsonObject.getString("type");
+                        if (type.startsWith("Array")) {
+                            type = type.substring(6, type.length() - 1) + "数组";
+                        }
                         String note = jsonObject.getString("note");
-                        buffer.append(MessageFormat.format("| {0} | {1} | {2} |\n", name, type, note));
+                        buffer.append("|").append(name).append("|").append(type).append("|").append(note).append("|\n");
                     }
 
                     temp.append(buffer);
@@ -309,39 +302,25 @@ public class ApiConfigService {
 
     }
 
-    /**
-     * 导出API配置
-     *
-     * @param ids
-     * @return
-     */
-    public JSONObject exportAPI(List<String> ids) {
+    public JSONObject selectBatch(List<String> ids) {
         List<ApiConfig> list = apiConfigMapper.selectBatchIds(ids);
-        List<ApiPluginConfig> plugins = pluginConfigMapper.selectByApiIds(ids);
+        List<ApiSql> sqls = apiSqlMapper.selectByApiIds(ids);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("api", list);
-        jsonObject.put("plugins", plugins);
+        jsonObject.put("sql", sqls);
         return jsonObject;
     }
 
-    /**
-     * 导入API配置
-     *
-     * @param configs
-     * @param plugins
-     */
+
     @Transactional
-    public void importAPI(List<ApiConfig> configs, List<ApiPluginConfig> plugins) {
+    public void insertBatch(List<ApiConfig> configs, List<ApiSql> sqls) {
         configs.stream().forEach(t -> {
             t.setCreateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
             t.setUpdateTime(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
-            t.setStatus(Constants.API_STATUS_OFFLINE);
+            t.setStatus(0);
             apiConfigMapper.insert(t);
         });
-
-        plugins.stream().forEach(t -> {
-            pluginConfigMapper.insert(t);
-        });
+        sqls.stream().forEach(t -> apiSqlMapper.insert(t));
 
     }
 }
