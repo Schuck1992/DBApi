@@ -1,5 +1,6 @@
 package com.gitee.freakchicken.dbapi.basic.service;
 
+import com.baomidou.dynamic.datasource.annotation.DS;
 import com.gitee.freakchicken.dbapi.basic.dao.ApiAuthMapper;
 import com.gitee.freakchicken.dbapi.basic.dao.AppInfoMapper;
 import com.gitee.freakchicken.dbapi.basic.domain.ApiAuth;
@@ -17,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Service
+@DS("meta-db")
 public class AppService {
 
     @Autowired
@@ -39,9 +41,9 @@ public class AppService {
             app.setExpireDuration(60 * 60 * 24);
         } else if (app.getExpireDesc().equals("30day")) {
             app.setExpireDuration(60 * 60 * 24 * 30);
-        } else if (app.getExpireDesc().equals("单次有效")) {
+        } else if (app.getExpireDesc().equals("once")) {
             app.setExpireDuration(0);
-        } else if (app.getExpireDesc().equals("永久有效")) {
+        } else if (app.getExpireDesc().equals("forever")) {
             app.setExpireDuration(-1);
         }
 

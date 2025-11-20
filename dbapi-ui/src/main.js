@@ -22,6 +22,10 @@ import moment from 'moment';
 
 import { CONTENT_TYPE } from "@/constant";
 
+import 'echarts';
+import ECharts from 'vue-echarts';
+Vue.component('v-chart', ECharts);
+
 Vue.use(VueClipboard)
 Vue.use(VueCodeMirror)
 Vue.use(install) // 导入模块
@@ -71,17 +75,8 @@ axios.interceptors.response.use(response => {
 
 // //过滤器
 Vue.filter('dateFormat', function (originVal) {
-    const dt = new Date(originVal)
-
-    const y = dt.getFullYear()
-    const m = (String(dt.getMonth() + 1)).padStart(2, '0')
-    const d = (String(dt.getDate())).padStart(2, '0')
-
-    const hh = (String(dt.getHours())).padStart(2, '0')
-    const mm = (String(dt.getMinutes())).padStart(2, '0')
-    const ss = (String(dt.getSeconds())).padStart(2, '0')
-
-    return `${y}-${m}-${d} ${hh}:${mm}:${ss}`
+    const dt = new Date(originVal*1000)
+    return moment(dt).format('YYYY-MM-DD HH:mm:ss')
 })
 
 

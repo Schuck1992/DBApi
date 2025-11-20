@@ -1,13 +1,19 @@
 package com.gitee.freakchicken.dbapi.basic.filter;
 
 import com.alibaba.fastjson.JSON;
+import com.gitee.freakchicken.dbapi.basic.domain.AccessLog;
+import com.gitee.freakchicken.dbapi.basic.log.AccessLogWriter;
 import com.gitee.freakchicken.dbapi.basic.service.ApiConfigService;
 import com.gitee.freakchicken.dbapi.basic.service.AppService;
 import com.gitee.freakchicken.dbapi.basic.service.AppTokenService;
+import com.gitee.freakchicken.dbapi.basic.util.IPUtil;
+import com.gitee.freakchicken.dbapi.basic.util.ThreadUtils;
 import com.gitee.freakchicken.dbapi.common.ApiConfig;
 import com.gitee.freakchicken.dbapi.common.ResponseDto;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -17,10 +23,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
 public class ApiAuthFilter implements Filter {
+
+    private static Logger accessLogger = LoggerFactory.getLogger("accessLogger");
 
     @Autowired
     private ApiConfigService apiConfigService;
@@ -31,8 +40,14 @@ public class ApiAuthFilter implements Filter {
     @Autowired
     AppService appService;
 
+    @Autowired
+    AccessLogWriter accessLogWriter;
+
     @Value("${dbapi.api.context}")
     private String apiContext;
+
+    @Value("${access.log.writer}")
+    private String logWriter;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -41,12 +56,17 @@ public class ApiAuthFilter implements Filter {
 
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException {
+
+        long now = System.currentTimeMillis();
+        AccessLog accessLog = new AccessLog();
+        accessLog.setTimestamp(now / 1000);
+
         log.debug("auth filter execute");
         HttpServletRequest request = (HttpServletRequest) servletRequest;
         HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-        String servletPath = request.getRequestURI();
-        servletPath = servletPath.substring(apiContext.length() + 2);
+        String uri = request.getRequestURI();
+        String servletPath = uri.substring(apiContext.length() + 2);
 
         // 不使用writer的时候不要提前获取response的writer,否则无法在后续filter中设置编码
         try {
@@ -57,6 +77,7 @@ public class ApiAuthFilter implements Filter {
                 response.getWriter().append(JSON.toJSONString(ResponseDto.fail("Api not exists")));
                 return;
             }
+            accessLog.setApiId(config.getId());
             // 如果是私有接口，校验权限
             if (config.getPrevilege() == 0) {
                 String tokenStr = request.getHeader("Authorization");
@@ -66,6 +87,7 @@ public class ApiAuthFilter implements Filter {
                     return;
                 } else {
                     String appId = tokenService.verifyToken(tokenStr);
+                    accessLog.setAppId(appId);
                     if (appId == null) {
                         log.error("token[{}] matched no appid", tokenStr);
                         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
@@ -90,11 +112,27 @@ public class ApiAuthFilter implements Filter {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().append(JSON.toJSONString(ResponseDto.fail(e.toString())));
             log.error(e.getMessage(), e);
-
+            accessLog.setError(e.getMessage());
         } finally {
             if (response.getWriter() != null) {
                 response.getWriter().close();
             }
+
+            accessLog.setDuration(System.currentTimeMillis() - now);
+            accessLog.setIp(IPUtil.getOriginIp(request));
+            accessLog.setStatus(response.getStatus());
+            accessLog.setUrl(uri);
+            accessLog.setId(UUID.randomUUID().toString());
+            accessLogger.info(JSON.toJSONString(accessLog));
+            if (!logWriter.equals("null")) {
+                ThreadUtils.submitAlarmTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        accessLogWriter.write(accessLog);
+                    }
+                });
+            }
+
         }
 
     }
@@ -104,12 +142,4 @@ public class ApiAuthFilter implements Filter {
 
     }
 
-    public boolean checkAuth(List<String> authGroups, String group) {
-        for (String authGroup : authGroups) {
-            if (authGroup.equals(group)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

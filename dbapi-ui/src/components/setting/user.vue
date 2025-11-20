@@ -1,14 +1,14 @@
 <template>
   <div>
-    <h2>修改管理员密码</h2>
+    <h2>{{$t('m.change_pass')}}</h2>
     <div class="box">
       <div class="input">
-        <el-input v-model="password" placeholder="输入密码" type="password"></el-input>
+        <el-input v-model="password" :placeholder="$t('m.input_pwd')" type="password"></el-input>
       </div>
       <div class="input">
-        <el-input v-model="repassword" placeholder="请再次输入密码" type="password"></el-input>
+        <el-input v-model="repassword" :placeholder="$t('m.input_pwd_again')" type="password"></el-input>
       </div>
-      <el-button @click="resetPassword()">修改</el-button>
+      <el-button @click="resetPassword()">{{$t('m.save')}}</el-button>
     </div>
   </div>
 </template>
@@ -25,16 +25,16 @@ export default {
   methods:{
     resetPassword(){
       if (this.password !== this.repassword){
-        this.$message.error("两次输入的密码不一样！")
+        this.$message.error("The passwords entered twice are different！")
         return
       }
       if (this.password == '' || this.password == null){
-        this.$message.warning("请输入密码！")
+        this.$message.warning("Please input password！")
         return
       }
 
       this.axios.post("/user/resetPassword", {password: this.password}).then((response) => {
-        this.$message.success("修改成功")
+        this.$message.success("Success")
       }).catch((error) => {
         this.$message.error(error)
       })
