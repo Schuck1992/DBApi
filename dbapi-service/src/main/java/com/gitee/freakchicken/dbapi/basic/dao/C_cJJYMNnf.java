@@ -1,0 +1,36 @@
+package com.gitee.freakchicken.dbapi.basic.dao;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.gitee.freakchicken.dbapi.basic.domain.ApiDto;
+import com.gitee.freakchicken.dbapi.common.ApiConfig;
+import java.util.List;
+import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Result;
+import org.apache.ibatis.annotations.Results;
+import org.apache.ibatis.annotations.Select;
+
+@Mapper
+public interface C_cJJYMNnf extends BaseMapper<ApiConfig> {
+    @Select({"select * from api_config where path=#{path} and status = 1"})
+    ApiConfig m_dVlswfHt(String paramString);
+
+    @Select({"<script>select * from api_config\n<where>\n<if test='groupId != null and groupId !=\"\"'> group_id = #{groupId} </if>\n\t<if test='name != null and name !=\"\"'> and name like #{name} </if>\n\t<if test='note != null and note !=\"\"'> and note like #{note} </if>\n\t<if test='path != null and path !=\"\"'> and path like #{path} </if>\n</where></script>"})
+    List<ApiConfig> m_1dPnN8rP(@Param("name") String paramString1, @Param("note") String paramString2, @Param("path") String paramString3, @Param("groupId") String paramString4);
+
+    @Select({"select count(1) from api_config where path=#{path}"})
+    Integer m_Th6aNdeJ(String paramString);
+
+    @Select({"select count(1) from api_config where path=#{path} and id != #{id}"})
+    Integer m_kdtYO3mF(@Param("path") String paramString1, @Param("id") String paramString2);
+
+    @Select({"select count(1) from api_config where group_id = #{id}"})
+    int m_V5Oiji3m(String paramString);
+
+    @Results(id = "accResultMap", value = {@Result(property = "id", column = "id"), @Result(property = "name", column = "name"), @Result(property = "group_name", column = "groupName")})
+    @Select({"select t1.id,t1.name,t2.name as group_name from api_config t1 join api_group t2 on t1.group_id = t2.id"})
+    List<ApiDto> m_CRiOpIwr();
+
+    @Select({"select * from api_config where group_id = #{groupId}"})
+    List<ApiConfig> m_cmezhiWw(String paramString);
+}
