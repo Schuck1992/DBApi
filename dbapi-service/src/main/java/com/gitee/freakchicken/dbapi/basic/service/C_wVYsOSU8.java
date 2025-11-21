@@ -145,7 +145,7 @@ public class C_wVYsOSU8 {
         List<Group> lf_1sPKRIsk = this.gf_3sd0VEH8.selectList(null);
         List<JSONObject> lf_cUaT1Y3Y = (List<JSONObject>)lf_1sPKRIsk.stream().sorted(Comparator.comparing(Group::getUpdateTime)).map(lambda_lf_MIeqxQqE -> {
             List<ApiConfig> lf_uLGjZpwy = this.gf_xAclERib.m_cmezhiWw(lambda_lf_MIeqxQqE.getId());
-            List<JSONObject> lf_nW2T5oco = (List<JSONObject>)lf_uLGjZpwy.stream().sorted(Comparator.comparing(ApiConfig::getUpdateTime)).map(()).collect(Collectors.toList());
+            List<JSONObject> lf_nW2T5oco = lf_uLGjZpwy.stream().sorted(Comparator.comparing(ApiConfig::getUpdateTime)).collect(Collectors.toList());
             JSONObject lf_je5Pjq75 = new JSONObject();
             lf_je5Pjq75.put("name", lambda_lf_MIeqxQqE.getName());
             lf_je5Pjq75.put("id", lambda_lf_MIeqxQqE.getId());
