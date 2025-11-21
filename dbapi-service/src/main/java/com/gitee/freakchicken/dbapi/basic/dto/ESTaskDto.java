@@ -52,7 +52,7 @@ public class ESTaskDto {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $method = getMethod();
         result = result * 59 + (($method == null) ? 43 : $method.hashCode());
         Object $endpoint = getEndpoint();

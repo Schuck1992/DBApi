@@ -45,7 +45,7 @@ public class SQLTaskDto {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $datasourceId = getDatasourceId();
         result = result * 59 + (($datasourceId == null) ? 43 : $datasourceId.hashCode());
         Object $transaction = getTransaction();

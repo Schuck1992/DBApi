@@ -43,7 +43,7 @@ public class ApiSqlDto {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $sqlText = getSqlText();
         result = result * 59 + (($sqlText == null) ? 43 : $sqlText.hashCode());
         Object $transformPlugin = getTransformPlugin();
