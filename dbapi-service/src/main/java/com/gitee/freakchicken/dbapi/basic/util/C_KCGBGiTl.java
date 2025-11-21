@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class C_KCGBGiTl {
     public static void main(String[] p_rlCrXsNo) {
-        System.out.println("+ m_234JGMN5());
+        System.out.println("本地IP：" + m_234JGMN5());
     }
 
     public static String m_234JGMN5() {
@@ -27,7 +27,7 @@ public class C_KCGBGiTl {
                 }
             }
         } catch (Exception e) {
-            System.err.println("IP+ e.toString());
+            System.err.println("IP地址获取失败" + e.toString());
         }
         return "";
     }

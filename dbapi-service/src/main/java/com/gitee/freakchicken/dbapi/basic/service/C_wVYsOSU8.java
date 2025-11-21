@@ -191,18 +191,18 @@ public class C_wVYsOSU8 {
     }
 
     public String m_KtvoJG28(List<String> p_1tsw9Ml7) {
-        StringBuffer lf_GdKN13g0 = new StringBuffer("# \n---\n");
+        StringBuffer lf_GdKN13g0 = new StringBuffer("# 接口文档\n---\n");
         List<ApiConfig> lf_jHEan6qJ = this.gf_xAclERib.selectBatchIds(p_1tsw9Ml7);
         lf_jHEan6qJ.stream().forEach(lambda_lf_kzQJXNpB -> {
-            String lf_2HUIKTk7 = "## {0}\n- /{1}/{2}\n- {3}\n- Content-Type{4}\n";
+            String lf_2HUIKTk7 = "## {0}\n- 接口地址： /{1}/{2}\n- 接口备注： {3}\n- Content-Type{4}\n";
             lf_GdKN13g0.append(MessageFormat.format(lf_2HUIKTk7, new Object[] { lambda_lf_kzQJXNpB.getName(), this.gf_75U2dWf1, lambda_lf_kzQJXNpB.getPath(), lambda_lf_kzQJXNpB.getNote(), lambda_lf_kzQJXNpB.getContentType() }));
-            lf_GdKN13g0.append("\n- );
+            lf_GdKN13g0.append("\n- 请求参数：");
             if ("application/x-www-form-urlencoded".equalsIgnoreCase(lambda_lf_kzQJXNpB.getContentType())) {
                 String lf_TlzfMTxB = lambda_lf_kzQJXNpB.getParams();
                 JSONArray lf_6s4fs0Sh = JSON.parseArray(lf_TlzfMTxB);
                 if (lf_6s4fs0Sh.size() > 0) {
                     StringBuffer lf_nXhG0l4G = new StringBuffer();
-                    lf_nXhG0l4G.append("\n\n| | | |\n");
+                    lf_nXhG0l4G.append("\n\n| 参数名称 | 参数类型 | 参数说明 |\n");
                     lf_nXhG0l4G.append("| :----: | :----: | :----: |\n");
                     for (int lf_os8jX5Q8 = 0; lf_os8jX5Q8 < lf_6s4fs0Sh.size(); lf_os8jX5Q8++) {
                         JSONObject lf_r4YfCLzx = lf_6s4fs0Sh.getJSONObject(lf_os8jX5Q8);
@@ -213,14 +213,14 @@ public class C_wVYsOSU8 {
                     }
                     lf_GdKN13g0.append(lf_nXhG0l4G);
                 } else {
-                    lf_GdKN13g0.append("\n");
+                    lf_GdKN13g0.append("无参数\n");
                 }
             } else if ("application/json".equalsIgnoreCase(lambda_lf_kzQJXNpB.getContentType())) {
                 lf_GdKN13g0.append("\n```json\n").append(lambda_lf_kzQJXNpB.getJsonParam()).append("\n```\n");
             }
             lf_GdKN13g0.append("\n---\n");
         });
-        lf_GdKN13g0.append("\n+ (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date()));
+        lf_GdKN13g0.append("\n导出日期：" + (new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")).format(new Date()));
         return lf_GdKN13g0.toString();
     }
 
