@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.gitee.freakchicken.dbapi</groupId>
         <artifactId>dbapi</artifactId>
-        <version>3.2.1</version>
+        <version>4.0.10</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -23,6 +23,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
                 <executions>
                     <execution>
                         <id>exec-npm-install</id>
@@ -34,6 +35,7 @@
                             <executable>npm</executable>
                             <arguments>
                                 <argument>install</argument>
+                                <argument>--unsafe-perm</argument>
                             </arguments>
                             <workingDirectory>${basedir}</workingDirectory>
                         </configuration>

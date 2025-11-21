@@ -9,18 +9,15 @@ public class PluginConf {
     private static Properties p = new Properties();
 
     static {
-
         InputStream in = PluginConf.class.getClassLoader().getResourceAsStream("plugin.properties");
         try {
             p.load(in);
         } catch (IOException e) {
             e.printStackTrace();
         }
-
     }
 
     public static String getKey(String key) {
         return p.getProperty(key);
     }
-
 }

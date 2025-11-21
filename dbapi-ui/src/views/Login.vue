@@ -5,23 +5,13 @@
         DBAPI
       </div>
       <div class="item">
-        <el-input
-          v-model="username"
-          :placeholder="$t('m.username')"
-        ></el-input>
+        <el-input v-model="username" :placeholder="$t('m.username')"></el-input>
       </div>
       <div class="item">
-        <el-input
-          v-model="password"
-          :placeholder="$t('m.password')"
-          type="password"
-        ></el-input>
+        <el-input v-model="password" :placeholder="$t('m.password')" type="password"></el-input>
       </div>
       <div class="item">
-        <div
-          class="buttton"
-          @click="login"
-        >{{$t('m.login')}}</div>
+        <div class="buttton" @click="login">{{ $t('m.login') }}</div>
       </div>
     </div>
   </div>
@@ -38,22 +28,21 @@ export default {
   },
   methods: {
     login() {
-      this.axios
-        .post("/user/login", {
-          username: this.username,
-          password: this.password,
-        })
-        .then((response) => {
-          if (response.data.success) {
-            localStorage.setItem("token", response.data.msg);
-            this.$router.push("/api");
-          } else {
-            this.$message.error(response.data.msg);
-          }
-        })
-        .catch((error) => {
-          this.$message.error(error);
-        });
+      this.axios.post("/user/login", {
+        username: this.username,
+        password: this.password,
+      }).then((response) => {
+        if (response.data.success) {
+          localStorage.setItem("token", response.data.data.token);
+          localStorage.setItem("username", response.data.data.username);
+          localStorage.setItem("userId", response.data.data.id);
+          this.$router.push("/api");
+        } else {
+          this.$message.error(response.data.msg);
+        }
+      }).catch((error) => {
+        this.$message.error(error);
+      });
     },
   },
   created() {
@@ -74,56 +63,58 @@ export default {
 
 <style scoped>
 .box {
-  display: flex;
-  display: -webkit-flex;
-  align-items: center;
-  justify-content: center;
-  /*margin-top: 200px;*/
+    display: flex;
+    display: -webkit-flex;
+    align-items: center;
+    justify-content: center;
+    /*margin-top: 200px;*/
 }
 
 .content {
-  /*box-shadow: 10px 10px 5px #888888;*/
-  /*margin-top: -100px;*/
-  padding-bottom: 100px;
+    /*box-shadow: 10px 10px 5px #888888;*/
+    /*margin-top: -100px;*/
+    padding-bottom: 100px;
 }
 
 .item {
-  width: 400px;
-  height: 70px;
+    width: 400px;
+    height: 70px;
 }
 
 .buttton {
-  width: 400px;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  background-color: #06b176;
-  border-radius: 10px;
-  color: #ffffff;
-  font-weight: 700;
-  font-size: 20px;
+    width: 400px;
+    height: 40px;
+    line-height: 40px;
+    text-align: center;
+    background-color: #273446;
+    border-radius: 10px;
+    color: #bfcbd9;
+    font-weight: 700;
+    font-size: 20px;
 }
 
 .header {
-  text-align: center;
-  color: #06b176;
-  font-weight: 700;
-  font-size: 40px;
+    text-align: center;
+    color: #bfcbd9;
+    font-weight: 700;
+    font-size: 40px;
 }
 
 .buttton:hover {
-  background-color: #07a863;
-  font-size: 21px;
-  cursor: pointer;
+    background-color: #0b0f14;
+    font-size: 21px;
+    cursor: pointer;
 }
 
 .body-bg {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  top: 0;
-  left: 0;
-  overflow-y: auto;
-  background-color: #c7edcc;
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: 0;
+    left: 0;
+    overflow-y: auto;
+    background-image: radial-gradient( #486180, #222d3b);
+    /*background-color: #5a7aa1;*/
+    color: #bfcbd9;
 }
 </style>

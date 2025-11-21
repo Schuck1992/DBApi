@@ -11,7 +11,7 @@ import i18n from './i18n/i18n'
 import './theme/index.css'
 import './icon/iconfont.css'
 
-import VueCodeMirror from 'vue-codemirror'
+// import VueCodeMirror from 'vue-codemirror'
 import 'codemirror/lib/codemirror.css'
 
 import install from '@/components/common/index.js'
@@ -27,7 +27,7 @@ import ECharts from 'vue-echarts';
 Vue.component('v-chart', ECharts);
 
 Vue.use(VueClipboard)
-Vue.use(VueCodeMirror)
+// Vue.use(VueCodeMirror)
 Vue.use(install) // 导入模块
 moment.locale('zh-cn'); // 设置语言 或 moment.lang('zh-cn');
 Vue.prototype.$moment = moment;// 赋值使用
@@ -63,7 +63,7 @@ axios.interceptors.response.use(response => {
 }, error => {
     if (error.response.status == '401') {
         // 不是api请求测试的请求，就跳转登录页
-        if (!error.response.config.url.startsWith("http://")) {
+        if ((!error.response.config.url.startsWith("http://")) && (!error.response.config.url.startsWith("https://"))) {
             router.push("/login");
         } else {
             return Promise.reject(error)
@@ -80,7 +80,7 @@ Vue.filter('dateFormat', function (originVal) {
 })
 
 
-new Vue({
+window.vm = new Vue({
     router,
     i18n,
     store,

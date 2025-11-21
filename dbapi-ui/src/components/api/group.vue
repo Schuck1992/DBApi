@@ -30,7 +30,12 @@ export default {
     },
     createGroup() {
       this.axios.post("/group/create/", {name: this.inputValue}).then((response) => {
-        this.getAllGroups()
+        if (response.data.success) {
+          this.$message.success(response.data.msg)
+          this.getAllGroups()
+        } else {
+          this.$message.error(response.data.msg)
+        }
       }).catch((error) => {
         console.log(error.response)
         this.$message.error(error.response.data.message)

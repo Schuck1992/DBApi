@@ -44,7 +44,7 @@ export default {
     }
   },
   props: {
-    sql: {
+    sqlText: {
       type: String,
       default: ''
     },
@@ -58,17 +58,16 @@ export default {
   },
   methods: {
     onCmReady(cm) {
-      cm.setValue(this.sql)
+
+      cm.setValue(this.sqlText)
       this.cmInstance = cm
-      this.$emit('appendCm', cm)
-      // debugger
-      // this.cmList.push(cm)
+      this.$store.commit('addCm',cm)
+
       if (this.mode === "mini")
         cm.setSize('100%', '400px')
       else {
         cm.setSize('100%', 'calc(100vh - 350px)')
       }
-      // console.log('the editor is readied!', cm)
     },
     onCmFocus(cm) {
     },
@@ -97,7 +96,7 @@ export default {
 }
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .myMirror {
   width: 100%;
   //max-width: 100%;

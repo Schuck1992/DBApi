@@ -3,24 +3,16 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Login from '../views/Login.vue'
 
-// import donate from '../components/about/donate'
-// import json from '../components/tool/json'
-// import time from '../components/tool/time'
-
 import datasource from '../components/datasource/datasource'
-import datasourceEdit from '../components/datasource/edit'
-import datasourceAdd from '../components/datasource/add'
-import datasourceDetail from '../components/datasource/detail'
 import api from '../components/api/api'
 import monitor from '../components/monitor/monitor'
 import apiAdd from '../components/api/add'
 import apiEdit from '../components/api/edit'
 import detail from '../components/api/detail'
 import request from '../components/api/request'
-import token from '../components/token/token'
-import tokenAdd from '../components/token/add'
-import user from '../components/setting/user'
-import firewall from '../components/setting/firewall'
+import client from '../components/client/client'
+import clientAdd from '../components/client/add'
+import firewall from '../components/security/firewall'
 
 Vue.use(VueRouter)
 
@@ -31,24 +23,16 @@ const routes = [
     name: 'Home',
     component: Home,
     children: [
-      // {path: '/about/donate', name: 'donate', component: donate},
-      // {path: '/tool/json', name: 'json', component: json},
-      // {path: '/tool/time', name: 'time', component: time},
-
       { path: '/datasource', name: 'datasource', component: datasource },
-      { path: '/datasource/edit', component: datasourceEdit },
-      { path: '/datasource/detail', component: datasourceDetail },
-      { path: '/datasource/add', component: datasourceAdd },
       { path: '/api', name: 'api', component: api },
       { path: '/monitor', name: 'monitor', component: monitor },
       { path: '/api/add', name: 'apiAdd', component: apiAdd },
       { path: '/api/edit', name: 'apiEdit', component: apiEdit },
       { path: '/api/detail', name: 'detail', component: detail },
       { path: '/api/request', name: 'request', component: request },
-      { path: '/token', component: token },
-      { path: '/token/add', component: tokenAdd },
-      { path: '/setting/password', component: user },
-      { path: '/setting/firewall', component: firewall }
+      { path: '/client', component: client },
+      { path: '/client/add', component: clientAdd },
+      { path: '/security/firewall', component: firewall }
     ]
   }
 ]

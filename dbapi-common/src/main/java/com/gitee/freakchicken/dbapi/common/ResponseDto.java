@@ -4,18 +4,14 @@ import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 
 /**
- * @program: api
- * @description:
- * @author: jiangqiang
- * @create: 2020-08-11 11:22
- **/
-
+ */
 public class ResponseDto {
 
     String msg;
+
     boolean success;
 
-    @JSONField(serialzeFeatures = {SerializerFeature.WriteMapNullValue})
+    @JSONField(serialzeFeatures = { SerializerFeature.WriteMapNullValue })
     Object data;
 
     public String getMsg() {
@@ -34,7 +30,7 @@ public class ResponseDto {
         this.data = data;
     }
 
-    public boolean isSuccess() {
+    public boolean getSuccess() {
         return success;
     }
 
@@ -46,9 +42,7 @@ public class ResponseDto {
         ResponseDto dto = new ResponseDto();
         dto.setData(data);
         dto.setSuccess(true);
-//        dto.setMsg("Api access succeeded");
         return dto;
-
     }
 
     public static ResponseDto successWithMsg(String msg) {
@@ -71,6 +65,13 @@ public class ResponseDto {
         dto.setSuccess(false);
         dto.setMsg(msg);
         return dto;
+    }
 
+    public static ResponseDto failWithData(String msg, Object data) {
+        ResponseDto dto = new ResponseDto();
+        dto.setSuccess(false);
+        dto.setMsg(msg);
+        dto.setData(data);
+        return dto;
     }
 }

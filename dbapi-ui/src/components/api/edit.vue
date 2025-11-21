@@ -20,35 +20,29 @@ export default {
   components: {common},
   methods: {
     save() {
+      debugger
+      if(!this.$refs.apiEditCommon.checkValue()){
+        return;
+      }
       const detail = this.$refs.apiEditCommon.detail
-      const sqlList = this.$store.getters.getSql
+      const executors = this.$refs.apiEditCommon.$refs.executor
+      const taskJson = executors.map(node => node.getTaskJson())
       let p = {
         name: detail.name,
         path: detail.path,
-        note: detail.note,
         groupId: detail.groupId,
-        previlege: detail.previlege,
-        cachePlugin: detail.cachePlugin,
-        transformPlugin: detail.transformPlugin,
-        cachePluginParams: detail.cachePluginParams,
-        transformPluginParams: detail.transformPluginParams,
-        datasourceId: this.$refs.apiEditCommon.$refs.sqlCode.datasourceId,
-        sqlList: sqlList,
-        params: JSON.stringify(detail.params),
+        note: detail.note,
         contentType: detail.contentType,
         jsonParam: detail.jsonParam,
-        openTrans: detail.openTrans,
-        alarmPlugin: detail.alarmPlugin,
-        alarmPluginParam: detail.alarmPluginParam,
+        paramsJson: detail.paramsJson,
+        access: detail.access,
+        taskJson: taskJson,
+        cachePlugin: detail.cachePlugin,
+        alarmPlugins: detail.alarmPlugins,
+        globalTransformPlugin: detail.globalTransformPlugin,
         id: this.$route.query.id
       }
-
-      // console.log(detail)
-      if (p.sql == "" || p.datasourceId == null || p.name == null
-          || p.path == null || p.groupId == null) {
-        this.$message.error("Something Required!")
-        return
-      }
+      console.log(p)
 
       this.axios.post("/apiConfig/update", p,
           {headers: {'Content-Type': 'application/json'}}
@@ -72,6 +66,8 @@ export default {
 </script>
 
 <style scoped>
-
+.mycontent{
+    padding: 20px;
+}
 
 </style>

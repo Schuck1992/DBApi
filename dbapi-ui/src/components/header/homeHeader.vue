@@ -1,87 +1,88 @@
 <template>
   <div class="head">
     <div style="padding: 5px 10px">
-      <img src="@/img/logo.png" alt="" class="logo2" />
+      <img src="@/img/logo.png" alt="" class="logo2"/>
     </div>
     <!--    <div class="logo">DBApi</div>-->
     <span class="version">{{ version }}</span>
     <div class="menus">
-      <div
-        class="menu iconfont icon-database"
-        @click="clickMenu('/datasource')"
-      >
-        {{ $t("m.datasource") }}
-      </div>
-      <div class="menu iconfont icon-api" @click="clickMenu('/api')">API</div>
-      <div class="menu iconfont icon-quanxian" @click="clickMenu('/token')">
-        {{ $t("m.authority") }}
-      </div>
-      <div class="menu iconfont icon-shezhi">
+      <div class="menu iconfont icon-database " :class="{'activeMenu':$route.path == '/datasource'}" @click="clickMenu('/datasource')">{{ $t("m.datasource") }}</div>
+      <div class="menu iconfont icon-api" :class="{'activeMenu':$route.path.startsWith('/api')}" @click="clickMenu('/api')">API</div>
+      <div class="menu iconfont icon-kehu" :class="{'activeMenu':$route.path == '/client'}" @click="clickMenu('/client')">{{ $t("m.client") }}</div>
+      <div class="menu iconfont icon-shezhi" :class="{'activeMenu':$route.path.startsWith('/security')}">
         {{ $t("m.settings") }}
         <div class="submenus">
-          <div class="submenu" @click="clickMenu('/setting/password')">
-            {{ $t("m.change_pass") }}
-          </div>
-          <div class="submenu" @click="clickMenu('/setting/firewall')">
-            {{ $t("m.firewall") }}
-          </div>
+          <div class="submenu" :class="{'activeMenu':$route.path == '/security/firewall'}" @click="clickMenu('/security/firewall')">{{ $t("m.firewall") }}</div>
         </div>
       </div>
-      <div class="menu iconfont icon-jiankong" @click="clickMenu('/monitor')">
-        {{ $t("m.monitor") }}
-      </div>
+      <div class="menu iconfont icon-jiankong" :class="{'activeMenu':$route.path == '/monitor'}" @click="clickMenu('/monitor')">{{ $t("m.monitor") }}</div>
     </div>
     <div class="right">
-      <span class="mode">{{ this.$store.state.mode }}</span>
-      <div class="langs">
-        <span style="font-size: 14px" @click="showLangs">{{
-          languageName
-        }}</span>
-        <span class="lang el-icon-arrow-down" @click="showLangs"></span>
-        <div class="options" v-show="visiable">
-          <div
-            class="option" :key="index"
-            v-for="(item,index) in langs"
-            @click="changeLanguage(item)"
-          >
-            {{ item.name }}
-          </div>
-        </div>
-      </div>
-      <div style="line-height: 60px;margin: 0 5px">
-        <a href="https://github.com/freakchick/DBApi" target="_blank"><i class="iconfont icon-github" style="font-size: 26px"></i></a>
-      </div>
+
+      <el-dropdown @command="changeLanguage" style="margin-right: 15px">
+        <span class="el-dropdown-link" style="color: #bfcbd9">
+          {{ languageName }}<i class="el-icon-arrow-down el-icon--right"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item :command="item" :key="index" v-for="(item,index) in langs">{{ item.name }}</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+
+
+      <el-dropdown @command="handleCommand">
+        <span class="el-dropdown-link" style="color: #bfcbd9">
+          <i class="el-icon-user"></i>{{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
+        </span>
+        <el-dropdown-menu slot="dropdown">
+          <el-dropdown-item command="logout">{{ $t('m.logout') }}</el-dropdown-item>
+          <el-dropdown-item command="changePassword">{{ $t('m.change_password') }}</el-dropdown-item>
+        </el-dropdown-menu>
+      </el-dropdown>
+
+      <el-dialog :title="$t('m.change_password')" :visible.sync="dialogVisible">
+        <password></password>
+      </el-dialog>
 
     </div>
   </div>
 </template>
 
 <script>
+import password from "@/components/user/password.vue"
+
 export default {
   name: "homeHeader",
+  components: {password},
   data() {
     return {
+      dialogVisible: false,
       langs: [
-        { name: "English", value: "en" },
-        { name: "中文", value: "cn" },
+        {name: "English", value: "en"},
+        {name: "中文", value: "cn"},
       ],
       currentLang: this.$i18n.locale,
       version: null,
-      visiable: false,
+      username: localStorage.getItem("username")
     };
   },
   methods: {
-    showLangs() {
-      this.visiable = !this.visiable;
+
+    handleCommand(command) {
+      if (command == 'logout') {
+        localStorage.removeItem("token")
+        localStorage.removeItem("username")
+        localStorage.removeItem("userId")
+        this.$router.push("/login");
+      } else if (command == 'changePassword') {
+        this.dialogVisible = true
+        console.log(this.$route.path)
+      }
     },
-    hideLangs() {
-      this.visiable = false;
-    },
+
     clickMenu(data) {
       this.$router.push(data);
     },
     changeLanguage(data) {
-      this.visiable = false;
       this.$i18n.locale = data.value;
       localStorage.setItem("locale", data.value);
       this.currentLang = data.value;
@@ -92,7 +93,8 @@ export default {
         .then((response) => {
           this.version = response.data;
         })
-        .catch((error) => {});
+        .catch((error) => {
+        });
     },
   },
   created() {
@@ -108,41 +110,45 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style scoped lang="less">
 .head {
   display: flex;
-  background-color: #06b176;
+  //background-color: #304156;
+  background-image: linear-gradient(15deg, #486180, #324256, #486180);
+  color: #bfcbd9;
   width: 100%;
-  //box-shadow: 1px 1px 5px #72767b;
+  line-height: 60px;
+
   .logo2 {
     flex-shrink: 0;
-    //width: 60px;
-    color: #045008;
     display: block;
     height: 50px;
   }
 
   .version {
-    //line-height: 60px;
     padding: 30px 20px 0px 0px;
     font-size: 14px;
-    //color: #fff;
-    //text-shadow: 2px 2px 1px #a5d4b7;
+    line-height: 20px;
   }
 
   .menus {
-    background-color: #06b176;
     flex-shrink: 0;
     flex-grow: 1;
     display: flex;
-    line-height: 60px;
-    //font-size: 40px;
-    color: #fff;
+
+
+    .activeMenu {
+      //background-image: linear-gradient(90deg, #495f7a, #2f3d50, #495f7a);
+      //background-image: radial-gradient( #486180, #283546);
+      //opacity: 0.3;
+      color: #f9fbfd;
+      font-size: 22px;
+    }
 
     .menu {
       margin: 0 5px;
       padding: 0 10px;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       cursor: pointer;
       position: relative;
@@ -154,11 +160,10 @@ export default {
         position: absolute;
         top: 60px;
         left: 0px;
-        background-color: #06b176;
+        background-color: #304156;
         //padding: 0 10px;
         width: 200px;
 
-        //font-size: 20px;
         border-radius: 5px;
         //border: 1px solid #00ff00;
         .submenu {
@@ -171,13 +176,13 @@ export default {
           text-overflow: ellipsis;
 
           &:hover {
-            background-color: #059463;
+            background-color: #222d3b;
           }
         }
       }
 
       &:hover {
-        background-color: #059463;
+        background-color: #222d3b;
 
         .submenus {
           display: block;
@@ -191,25 +196,21 @@ export default {
     flex-shrink: 0;
     display: flex;
 
-    background-color: #06b176;
-
     .mode {
       font-family: Helvetica;
       font-weight: 900;
       font-size: 15px;
       margin-right: 10px;
-      //color: #045008;
-      //text-shadow: 2px 2px 1px #a5d4b7;
-      line-height: 60px;
+
     }
+
     .langs {
       position: relative;
 
       span {
         cursor: pointer;
-        line-height: 60px;
+
         font-size: 18px;
-        color: #fff;
       }
 
       .options {
@@ -217,8 +218,7 @@ export default {
         position: absolute;
         right: 0;
         // display: none;
-        background-color: #06b176;
-        color: #fff;
+        background-color: #304156;
 
         line-height: 30px;
 
@@ -227,7 +227,7 @@ export default {
           padding: 0 10px;
 
           &:hover {
-            background-color: #059463;
+            background-color: #222d3b;
           }
         }
       }

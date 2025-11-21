@@ -5,9 +5,9 @@ import {
     Link,
     Dialog,
     Autocomplete,
-    // Dropdown,
-    // DropdownMenu,
-    // DropdownItem,
+    Dropdown,
+    DropdownMenu,
+    DropdownItem,
     Menu,
     Submenu,
     MenuItem,
@@ -70,6 +70,8 @@ import {
     // Timeline,
     // TimelineItem,
     // Link,
+    Descriptions,
+    DescriptionsItem,
     Divider,
     // Image,
     // Calendar,
@@ -86,9 +88,9 @@ import {
 Vue.use(Link);
 Vue.use(Dialog);
 Vue.use(Autocomplete);
-// Vue.use(Dropdown);
-// Vue.use(DropdownMenu);
-// Vue.use(DropdownItem);
+Vue.use(Dropdown);
+Vue.use(DropdownMenu);
+Vue.use(DropdownItem);
 Vue.use(Menu);
 Vue.use(Submenu);
 Vue.use(MenuItem);
@@ -161,6 +163,10 @@ Vue.use(Cascader);
 // Vue.use(TimelineItem);
 // Vue.use(Link);
 Vue.use(Divider);
+Vue.use(Descriptions);
+Vue.use(DescriptionsItem);
+
+
 // Vue.use(Image);
 // Vue.use(Calendar);
 // Vue.use(Backtop);

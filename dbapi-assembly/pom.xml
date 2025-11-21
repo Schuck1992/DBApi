@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.gitee.freakchicken.dbapi</groupId>
         <artifactId>dbapi</artifactId>
-        <version>3.2.1</version>
+        <version>4.0.10</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -51,21 +51,42 @@
 
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-                <configuration>
-                    <descriptors>
-                        <descriptor>binary.xml</descriptor><!--对应着打包配置-->
-                    </descriptors>
-                    <outputDirectory>${project.parent.basedir}/dist</outputDirectory>
-                </configuration>
+
                 <executions>
                     <execution>
-                        <id>make-assembly</id>
+                        <id>binary</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
+
+                        <configuration>
+                            <descriptors>
+                                <descriptor>binary.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <outputDirectory>${project.parent.basedir}/dist</outputDirectory>
+                        </configuration>
                     </execution>
+
+                    <execution>
+                        <id>src</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <descriptors>
+                                <descriptor>src.xml</descriptor>
+                            </descriptors>
+                            <appendAssemblyId>true</appendAssemblyId>
+                            <outputDirectory>${project.parent.basedir}/dist</outputDirectory>
+                        </configuration>
+                    </execution>
+
                 </executions>
+
+
             </plugin>
 
         </plugins>

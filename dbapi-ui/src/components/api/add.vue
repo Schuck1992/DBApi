@@ -4,7 +4,7 @@
     </el-button>
     <h2>{{ $t('m.create_api') }}</h2>
 
-    <common ref="apiAdd"></common>
+    <common ref="apiAdd" :groupId="groupId"></common>
 
     <el-button @click="save" type="primary" plain style="margin:10px 0">{{ $t('m.save') }}</el-button>
 
@@ -16,44 +16,39 @@ import common from '@/components/api/common'
 
 export default {
   data() {
-    return {}
+    return {
+      groupId: this.$route.query.groupId
+    }
   },
   components: {common},
   methods: {
-
     save() {
+      debugger
+      if (!this.$refs.apiAdd.checkValue()) {
+        return;
+      }
       const detail = this.$refs.apiAdd.detail
-      const sqlList = this.$store.getters.getSql
+
+      const executors = this.$refs.apiAdd.$refs.executor
+      const taskJson = executors.map(node => node.getTaskJson())
       let p = {
         name: detail.name,
         path: detail.path,
-        note: detail.note,
         groupId: detail.groupId,
-        previlege: detail.previlege,
-        cachePlugin: detail.cachePlugin,
-        cachePluginParams: detail.cachePluginParams,
-        // transformPlugin: detail.transformPlugin,
-        // transformPluginParams: detail.transformPluginParams,
-        datasourceId: this.$refs.apiAdd.$refs.sqlCode.datasourceId,
-        sqlList: sqlList,
-        params: JSON.stringify(detail.params),
+        note: detail.note,
         contentType: detail.contentType,
         jsonParam: detail.jsonParam,
-        openTrans: detail.openTrans,
-        alarmPlugin: detail.alarmPlugin,
-        alarmPluginParam: detail.alarmPluginParam
-      }
+        paramsJson: detail.paramsJson,
+        access: detail.access,
+        taskJson: taskJson,
+        cachePlugin: detail.cachePlugin,
+        alarmPlugins: detail.alarmPlugins,
+        globalTransformPlugin: detail.globalTransformPlugin
 
+      }
       console.log(p)
-
-      if (p.sql == "" || p.datasourceId == null || p.name == null
-          || p.path == null || p.groupId == null) {
-        this.$message.error("Something Required!")
-        return
-      }
-
       this.axios.post("/apiConfig/add", p,
-          {headers: {'Content-Type': 'application/json'}}
+        {headers: {'Content-Type': 'application/json'}}
       ).then((response) => {
         if (response.data.success) {
           this.$message.success(response.data.msg)
@@ -63,17 +58,19 @@ export default {
         }
 
       }).catch((error) => {
-        this.$message.error("Failed")
+        this.$message.error("Create API Failed")
       })
     }
   },
   created() {
-
+    this.groupId = this.$route.query.groupId
   }
 }
 </script>
 
-<style scoped>
-
+<style scoped lang="less">
+.mycontent {
+  padding: 20px;
+}
 
 </style>

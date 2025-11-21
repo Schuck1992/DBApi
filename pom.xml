@@ -6,7 +6,7 @@
 
     <groupId>com.gitee.freakchicken.dbapi</groupId>
     <artifactId>dbapi</artifactId>
-    <version>3.2.1</version>
+    <version>4.0.10</version>
 
     <name>DBApi</name>
     <description>build http api from sql without other code</description>
@@ -29,6 +29,7 @@
             <id>release</id>
             <modules>
                 <module>dbapi-ui</module>
+                <module>dbapi-tool</module>
                 <module>dbapi-common</module>
                 <module>dbapi-plugin</module>
                 <module>dbapi-service</module>
@@ -214,7 +215,7 @@
                 </configuration>
             </plugin>
 
-            <!--  更新子模块版本号： mvn -N versions:update-child-modules-->
+            <!--  更新子模块版本号： mvn -N versions:update-child-modules  -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>versions-maven-plugin</artifactId>
@@ -244,8 +245,8 @@
 
     <licenses>
         <license>
-            <name>The Apache Software License, Version 2.0</name>
-            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE, Version 3</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
