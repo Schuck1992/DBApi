@@ -72,7 +72,7 @@ public class Group implements Serializable {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $id = getId();
         result = result * 59 + (($id == null) ? 43 : $id.hashCode());
         Object $name = getName();

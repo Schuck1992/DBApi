@@ -45,7 +45,7 @@ public class ClientToken implements Serializable {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $clientId = getClientId();
         result = result * 59 + (($clientId == null) ? 43 : $clientId.hashCode());
         Object $token = getToken();

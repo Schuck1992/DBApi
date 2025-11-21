@@ -79,7 +79,7 @@ public class JdbcDataSource {
 
     public int hashCode() {
         int PRIME = 59;
-        result = 1;
+        int result = 1;
         Object $type = getType();
         result = result * 59 + (($type == null) ? 43 : $type.hashCode());
         Object $url = getUrl();
