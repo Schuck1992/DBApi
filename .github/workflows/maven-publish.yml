@@ -2,8 +2,8 @@ name: Build & Auto Release
 
 on:
   push:
-    # branches:
-    #   - dev # 取消注释以限制分支
+  # branches:
+  #   - dev # 取消注释以限制分支
 
 jobs:
   build-and-release:
@@ -90,6 +90,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.DBAPI_SECRET }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: dist/dbapi-3.2.1-bin.tar.gz
-          asset_name: dbapi-3.2.1-bin.tar.gz
+          asset_path: dist/dbapi-4.0.9-bin.tar.gz
+          asset_name: dbapi-4.0.9-bin.tar.gz
           asset_content_type: application/gzip
