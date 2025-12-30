@@ -160,7 +160,7 @@ public class JdbcUtil {
             return list;
         } else {
             int updateCount = statement.getUpdateCount();
-            return updateCount + " rows affected";
+            return null;
         }
 
     }
