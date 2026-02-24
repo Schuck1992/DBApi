@@ -3,6 +3,7 @@ package com.gitee.freakchicken.dbapi.basic.util;
 import com.alibaba.druid.pool.DruidPooledConnection;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.JSONArray;
 import com.gitee.freakchicken.dbapi.basic.domain.DataSource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -160,7 +161,7 @@ public class JdbcUtil {
             return list;
         } else {
             int updateCount = statement.getUpdateCount();
-            return null;
+            return new JSONArray();
         }
 
     }
